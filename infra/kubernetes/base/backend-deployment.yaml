@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agrograte-backend
+  labels:
+    app: agrograte
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: agrograte
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: agrograte
+        component: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/agrograte/backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: agrograte-secrets
+                  key: database_url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: agrograte-secrets
+                  key: redis_url
+            - name: NATS_URL
+              value: nats://nats:4222
+            - name: APP_ENVIRONMENT
+              value: production
+            - name: RUST_LOG
+              value: info
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agrograte-backend
+spec:
+  selector:
+    app: agrograte
+    component: backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,85 @@
+# ============================================
+# AGROGRATE AI - Production Docker Compose
+# ============================================
+# WARNING: Never hardcode secrets here.
+# All secrets are injected via environment variables
+# or .env.production file (gitignored).
+# ============================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-agrograte}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-agrograte}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agrograte}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  nats:
+    image: nats:2-alpine
+    ports:
+      - "4222:4222"
+    command: ["-js"]
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      APP_DATABASE_URL: ${APP_DATABASE_URL}
+      APP_REDIS_URL: ${APP_REDIS_URL:-redis://redis:6379}
+      APP_NATS_URL: ${APP_NATS_URL:-nats://nats:4222}
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:-production}
+      APP_PORT: ${APP_PORT:-8080}
+      APP_FRONTEND_ORIGIN: ${APP_FRONTEND_ORIGIN:-https://app.agrograte.ai}
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
+      APP_INVESTEC_CLIENT_ID: ${APP_INVESTEC_CLIENT_ID}
+      APP_INVESTEC_CLIENT_SECRET: ${APP_INVESTEC_CLIENT_SECRET}
+      APP_INVESTEC_API_KEY: ${APP_INVESTEC_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8080}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:

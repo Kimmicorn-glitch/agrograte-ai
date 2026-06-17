@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agrograte-frontend
+  labels:
+    app: agrograte
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agrograte
+      component: frontend
+  template:
+    metadata:
+      labels:
+        app: agrograte
+        component: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/agrograte/frontend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: http://agrograte-backend:8080
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agrograte-frontend
+spec:
+  selector:
+    app: agrograte
+    component: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: agrograte-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - api.agrograte.ai
+        - app.agrograte.ai
+      secretName: agrograte-tls
+  rules:
+    - host: api.agrograte.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agrograte-backend
+                port:
+                  number: 8080
+    - host: app.agrograte.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: agrograte-frontend
+                port:
+                  number: 3000

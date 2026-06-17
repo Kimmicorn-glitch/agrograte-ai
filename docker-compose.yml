@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: agrograte
+      POSTGRES_PASSWORD: agrograte
+      POSTGRES_DB: agrograte
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agrograte"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats:
+    image: nats:2-alpine
+    ports:
+      - "4222:4222"
+    command: ["-js"]
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      APP_DATABASE_URL: postgres://agrograte:agrograte@postgres:5432/agrograte
+      APP_REDIS_URL: redis://redis:6379
+      APP_NATS_URL: nats://nats:4222
+      APP_ENVIRONMENT: development
+      RUST_LOG: info
+      APP_PORT: 8080
+      APP_JWT_SECRET: dev-jwt-secret-not-for-production
+      APP_INVESTEC_CLIENT_ID: dev_client_id
+      APP_INVESTEC_CLIENT_SECRET: dev_client_secret
+      APP_INVESTEC_API_KEY: dev_api_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_started
+
+volumes:
+  pgdata:
