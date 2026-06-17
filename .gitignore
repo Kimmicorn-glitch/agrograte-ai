@@ -1,0 +1,95 @@
+# ============================
+# Rust
+# ============================
+target/
+**/*.rs.bk
+backend/target/
+
+# ============================
+# Node / Frontend
+# ============================
+node_modules/
+**/node_modules/
+.next/
+frontend/.next/
+out/
+.swc/
+frontend/test-results/
+frontend/playwright-report/
+
+# ============================
+# Environment files (contain secrets — NEVER commit)
+# ============================
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+frontend/.env.*.local
+.env.development
+.env.staging
+.env.production
+
+# ============================
+# IDE
+# ============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================
+# OS
+# ============================
+.DS_Store
+Thumbs.db
+
+# ============================
+# Logs
+# ============================
+*.log
+/logs/
+backend/*.log
+frontend/*.log
+
+# ============================
+# Test & coverage output
+# ============================
+coverage/
+**/coverage/
+
+# ============================
+# Terraform
+# ============================
+infra/terraform/**/.terraform/
+*.tfstate
+*.tfstate.backup
+infra/terraform/**/terraform.tfvars
+
+# ============================
+# Docker
+# ============================
+docker-compose.override.yml
+
+# ============================
+# Build output
+# ============================
+dist/
+**/dist/
+build/
+**/build/
+tsconfig.tsbuildinfo
+
+# ============================
+# OpenCode AI config
+# ============================
+.opencode/
+
+# ============================
+# Misc
+# ============================
+*.pem
+*.key
+*.cert
+secrets/
