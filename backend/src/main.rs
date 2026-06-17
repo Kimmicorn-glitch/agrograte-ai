@@ -13,8 +13,9 @@ mod telemetry;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{error, info, warn};
 
 use crate::api::middleware::RateLimiter;
 use crate::api::AppRouter;
@@ -31,7 +32,6 @@ async fn main() -> anyhow::Result<()> {
 
     let mut config = AppConfig::from_env()?;
 
-    // Override database_url from explicit env var to ensure correctness
     if let Ok(db_url) = std::env::var("APP_DATABASE_URL") {
         if !db_url.is_empty() {
             config.database_url = db_url;
@@ -40,11 +40,22 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Agrograte AI starting up");
 
-    let pool = db::connect(&config.database_url).await?;
-    db::run_migrations(&pool).await?;
+    let pool = db::connect(&config.database_url);
+    let pool_migrate = pool.clone();
 
-    let redis = db::connect_redis(&config.redis_url).await?;
-    let nats = db::connect_nats(&config.nats_url).await?;
+    tokio::spawn(async move {
+        for attempt in 1..=10 {
+            match db::run_migrations(&pool_migrate).await {
+                Ok(()) => return,
+                Err(e) => warn!("Migration attempt {}/10 failed: {}", attempt, e),
+            }
+            tokio::time::sleep(Duration::from_secs(3)).await;
+        }
+        error!("Migrations failed after 10 attempts — continuing without schema guarantee");
+    });
+
+    let redis = db::connect_redis(&config.redis_url).await;
+    let nats = db::connect_nats(&config.nats_url).await;
 
     let mut drrt_engine = DrrtEngine::new();
     drrt_engine
@@ -84,8 +95,8 @@ async fn main() -> anyhow::Result<()> {
 #[derive(Clone)]
 pub struct AppState {
     pub pool: sqlx::PgPool,
-    pub redis: redis::aio::ConnectionManager,
-    pub nats: async_nats::Client,
+    pub redis: Option<redis::aio::ConnectionManager>,
+    pub nats: Option<async_nats::Client>,
     pub drrt: Arc<RwLock<DrrtEngine>>,
     pub investec: Arc<InvestecClient>,
     pub cashflow: CashFlowForecaster,
