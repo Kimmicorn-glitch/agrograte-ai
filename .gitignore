@@ -87,6 +87,11 @@ tsconfig.tsbuildinfo
 .opencode/
 
 # ============================
+# Documentation (local copies only — not on GitHub)
+# ============================
+*.md
+
+# ============================
 # Misc
 # ============================
 *.pem

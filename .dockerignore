@@ -1,0 +1,46 @@
+# Rust
+target/
+**/*.rs.bk
+backend/target/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+
+# Environment
+.env
+.env.*
+backend/.env
+frontend/.env.local
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose*.yml
+
+# Docs (local-only)
+*.md
+
+# Terraform
+infra/terraform/**/.terraform/
+*.tfstate*
+
+# Misc
+coverage/
+dist/
+build/
+*.log
+secrets/
