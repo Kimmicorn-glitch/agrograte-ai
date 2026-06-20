@@ -22,6 +22,16 @@ const { InvestecClient } = require('./services/investec-client')
 
 const investec = new InvestecClient()
 
+async function syncInvestecSnapshot() {
+  const accounts = await investec.getAccounts()
+  for (const account of accounts) {
+    const accountId = account.account_id || account.accountId || account.id
+    if (!accountId) continue
+    await investec.getTransactions(accountId)
+  }
+  return accounts
+}
+
 function getAuthUser(req) {
   const store = getDataStore()
   const auth = req.headers.authorization
@@ -122,7 +132,8 @@ app.get('/api/drrt/memory', (req, res) => {
 })
 
 // Financial Health
-app.get('/api/financial/health', (req, res) => {
+app.get('/api/financial/health', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const data = FinancialEngine.getHealthSummary(req.user.business_id)
   DrrtEngine.updateFromFinancialMetrics({
     revenue: data.revenue,
@@ -135,7 +146,8 @@ app.get('/api/financial/health', (req, res) => {
   res.json(data)
 })
 
-app.get('/api/financial/health/detail', (req, res) => {
+app.get('/api/financial/health/detail', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const data = FinancialEngine.getHealthDetail(req.user.business_id)
   DrrtEngine.updateFromFinancialMetrics({
     revenue: data.revenue,
@@ -149,35 +161,139 @@ app.get('/api/financial/health/detail', (req, res) => {
 })
 
 // Banking
-app.get('/api/banking/summary', (req, res) => {
-  const data = FinancialEngine.getBankingSummary(req.user.business_id)
-  DrrtEngine.updateFromFinancialMetrics({
-    total_balance: data.available_balance,
-    free_cash: data.available_balance - data.reserved_tax_funds,
-    liquidity_ratio: data.available_balance > 0 ? (data.available_balance - data.reserved_tax_funds) / data.available_balance : 0,
-  })
-  res.json(data)
-})
-
-app.get('/api/banking/accounts', (req, res) => {
-  const store = getDataStore()
-  const accounts = store.getAccounts(req.user.business_id)
-  res.json(accounts.map(a => ({
-    account_id: a.id,
-    account_number: a.account_number,
-    account_type: a.account_type,
-    current_balance: a.current_balance,
-    available_balance: a.available_balance,
-  })))
-})
-
-app.get('/api/banking/transactions', (req, res) => {
+app.get('/api/banking/summary', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   investec.getAccounts().then(accounts => {
-    res.json(accounts)
+    if (accounts.length > 0) {
+      const normalized = accounts.map(a => ({
+        account_id: a.account_id || a.accountId || a.id,
+        account_number: a.account_number || a.accountNumber || '',
+        account_type: a.account_type || a.accountType || '',
+        account_name: a.account_name || a.accountName || '',
+        current_balance: Number(a.current_balance ?? a.currentBalance ?? 0),
+        available_balance: Number(a.available_balance ?? a.availableBalance ?? 0),
+        currency: a.currency || 'ZAR',
+      }))
+      const availableBalance = normalized.reduce((sum, a) => sum + a.available_balance, 0)
+      const reservedTaxFunds = getDataStore().getAccounts(req.user.business_id).reduce((sum, a) => sum + (a.reserved_tax_funds || 0), 0)
+      DrrtEngine.updateFromFinancialMetrics({
+        total_balance: availableBalance,
+        free_cash: availableBalance - reservedTaxFunds,
+        liquidity_ratio: availableBalance > 0 ? (availableBalance - reservedTaxFunds) / availableBalance : 0,
+      })
+      return res.json({
+        available_balance: Math.round(availableBalance * 100) / 100,
+        pending_transactions: 0,
+        reserved_tax_funds: Math.round(reservedTaxFunds * 100) / 100,
+        programmable_rules: getDataStore().getProgrammableRules(req.user.business_id).length,
+        approval_workflows: getDataStore().getApprovalWorkflows(req.user.business_id).length,
+        drrt_coherence: DrrtEngine.getState().global_coherence || 0,
+        accounts: normalized,
+      })
+    }
+
+    const data = FinancialEngine.getBankingSummary(req.user.business_id)
+    DrrtEngine.updateFromFinancialMetrics({
+      total_balance: data.available_balance,
+      free_cash: data.available_balance - data.reserved_tax_funds,
+      liquidity_ratio: data.available_balance > 0 ? (data.available_balance - data.reserved_tax_funds) / data.available_balance : 0,
+    })
+    res.json(data)
+  }).catch(() => {
+    const data = FinancialEngine.getBankingSummary(req.user.business_id)
+    DrrtEngine.updateFromFinancialMetrics({
+      total_balance: data.available_balance,
+      free_cash: data.available_balance - data.reserved_tax_funds,
+      liquidity_ratio: data.available_balance > 0 ? (data.available_balance - data.reserved_tax_funds) / data.available_balance : 0,
+    })
+    res.json(data)
+  })
+})
+
+app.get('/api/banking/accounts', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
+  investec.getAccounts().then(accounts => {
+    if (accounts.length > 0) {
+      return res.json(accounts.map(a => ({
+        account_id: a.account_id || a.accountId || a.id,
+        account_number: a.account_number || a.accountNumber || '',
+        account_type: a.account_type || a.accountType || '',
+        account_name: a.account_name || a.accountName || '',
+        current_balance: Number(a.current_balance ?? a.currentBalance ?? 0),
+        available_balance: Number(a.available_balance ?? a.availableBalance ?? 0),
+        currency: a.currency || 'ZAR',
+      })))
+    }
+    const store = getDataStore()
+    const localAccounts = store.getAccounts(req.user.business_id)
+    res.json(localAccounts.map(a => ({
+      account_id: a.id,
+      account_number: a.account_number,
+      account_type: a.account_type,
+      account_name: a.account_name,
+      current_balance: a.current_balance,
+      available_balance: a.available_balance,
+    })))
+  }).catch(() => {
+    const store = getDataStore()
+    const localAccounts = store.getAccounts(req.user.business_id)
+    res.json(localAccounts.map(a => ({
+      account_id: a.id,
+      account_number: a.account_number,
+      account_type: a.account_type,
+      account_name: a.account_name,
+      current_balance: a.current_balance,
+      available_balance: a.available_balance,
+    })))
+  })
+})
+
+app.get('/api/banking/transactions', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
+  investec.getAccounts().then(async accounts => {
+    try {
+      const txns = []
+      for (const account of accounts) {
+        const accountId = account.account_id || account.accountId
+        if (!accountId) continue
+        const accountTxns = await investec.getTransactions(accountId)
+        txns.push(...accountTxns.map(t => ({
+          transaction_id: t.transaction_id || t.transactionId || t.id,
+          amount: t.amount,
+          description: t.description,
+          transaction_type: t.transaction_type || t.transactionType,
+          posting_date: t.posting_date || t.transactionDate || t.posted_at,
+          merchant: t.merchant || { name: t.description },
+        })))
+      }
+      if (txns.length > 0) {
+        return res.json(txns)
+      }
+    } catch (err) {
+      console.warn('[Banking] Live transaction fetch failed, falling back to local store:', err.message)
+    }
+
+    const store = getDataStore()
+    const txns = store.getAllTransactionsForBusiness(req.user.business_id)
+    res.json(txns.map(t => ({
+      transaction_id: t.id,
+      amount: t.amount,
+      description: t.description,
+      transaction_type: t.transaction_type,
+      posting_date: t.posted_at,
+      merchant: t.merchant || { name: t.description },
+    })))
   }).catch(() => {
     const store = getDataStore()
     const txns = store.getAllTransactionsForBusiness(req.user.business_id)
-    res.json(txns.slice(0, 100))
+    res.json(txns.map(t => ({
+      transaction_id: t.id,
+      amount: t.amount,
+      description: t.description,
+      transaction_type: t.transaction_type,
+      posting_date: t.posted_at,
+      merchant: t.merchant || { name: t.description },
+    })))
   })
 })
 
@@ -254,7 +370,8 @@ app.get('/api/investec/accounts/:accountId/transactions', async (req, res) => {
 })
 
 // Compliance
-app.get('/api/compliance/summary', (req, res) => {
+app.get('/api/compliance/summary', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const engine = ComplianceEngine
   const vatReturns = engine.generateVatReturns(req.user.business_id)
   const taxRecords = engine.generateTaxRecords(req.user.business_id)
@@ -267,7 +384,8 @@ app.get('/api/compliance/summary', (req, res) => {
   res.json(summary)
 })
 
-app.get('/api/compliance/report', (req, res) => {
+app.get('/api/compliance/report', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   ComplianceEngine.generateVatReturns(req.user.business_id)
   ComplianceEngine.generateTaxRecords(req.user.business_id)
   const report = ComplianceEngine.generateComplianceReport(req.user.business_id)
@@ -284,7 +402,8 @@ app.get('/api/compliance/report', (req, res) => {
   })
 })
 
-app.get('/api/compliance/vat-returns', (req, res) => {
+app.get('/api/compliance/vat-returns', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const returns = ComplianceEngine.generateVatReturns(req.user.business_id)
   res.json(returns.map(r => ({
     period: r.period,
@@ -298,7 +417,8 @@ app.get('/api/compliance/vat-returns', (req, res) => {
   })))
 })
 
-app.get('/api/compliance/tax-records', (req, res) => {
+app.get('/api/compliance/tax-records', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const records = ComplianceEngine.generateTaxRecords(req.user.business_id)
   res.json(records.map(r => ({
     tax_period: r.tax_period,
@@ -310,7 +430,8 @@ app.get('/api/compliance/tax-records', (req, res) => {
   })))
 })
 
-app.get('/api/compliance/tax-reserve', (req, res) => {
+app.get('/api/compliance/tax-reserve', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const reserve = ComplianceEngine.calculateTaxReserve(req.user.business_id)
   DrrtEngine.updateFromFinancialMetrics({ paid_invoice_ratio: reserve.current_reserve_balance > 0 ? 1 : 0 })
   res.json({
@@ -326,7 +447,8 @@ app.get('/api/compliance/tax-reserve', (req, res) => {
 })
 
 // Cashflow
-app.get('/api/cashflow/forecast', (req, res) => {
+app.get('/api/cashflow/forecast', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const forecast = CashFlowEngine.generateForecast(req.user.business_id)
   DrrtEngine.updateFromFinancialMetrics({
     total_balance: forecast.current_balance,
@@ -338,20 +460,24 @@ app.get('/api/cashflow/forecast', (req, res) => {
   res.json(forecast)
 })
 
-app.get('/api/cashflow/detail', (req, res) => {
+app.get('/api/cashflow/detail', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   res.json(CashFlowEngine.generateForecast(req.user.business_id))
 })
 
-app.get('/api/cashflow/tax-reserve', (req, res) => {
+app.get('/api/cashflow/tax-reserve', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   res.json(ComplianceEngine.calculateTaxReserve(req.user.business_id))
 })
 
 // Transactions
-app.get('/api/transactions/intelligence', (req, res) => {
+app.get('/api/transactions/intelligence', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   res.json(FinancialEngine.getTransactionIntelligence(req.user.business_id))
 })
 
-app.get('/api/transactions/categories', (req, res) => {
+app.get('/api/transactions/categories', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const store = getDataStore()
   const txns = store.getAllTransactionsForBusiness(req.user.business_id)
   const cats = {}
@@ -364,7 +490,8 @@ app.get('/api/transactions/categories', (req, res) => {
   res.json(Object.values(cats).map(c => ({ ...c, total: Math.round(c.total * 100) / 100 })))
 })
 
-app.get('/api/transactions/patterns', (req, res) => {
+app.get('/api/transactions/patterns', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   const store = getDataStore()
   const txns = store.getAllTransactionsForBusiness(req.user.business_id)
   const posted = txns.filter(t => t.status === 'posted')
@@ -378,7 +505,8 @@ app.get('/api/transactions/patterns', (req, res) => {
   })
 })
 
-app.get('/api/transactions/anomalies', (req, res) => {
+app.get('/api/transactions/anomalies', async (req, res) => {
+  await syncInvestecSnapshot().catch(() => {})
   res.json({ anomalies: [], total: 0, risk_level: 'low' })
 })
 
