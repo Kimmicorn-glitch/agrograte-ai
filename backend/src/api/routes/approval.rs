@@ -42,7 +42,12 @@ async fn list_pending(
     repositories::approvals::list_pending(&state.pool)
         .await
         .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+            )
+        })
 }
 
 async fn list_all(
@@ -51,7 +56,12 @@ async fn list_all(
     repositories::approvals::list_all(&state.pool)
         .await
         .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+            )
+        })
 }
 
 async fn create_approval(
@@ -84,7 +94,12 @@ async fn create_approval(
 
     repositories::approvals::create(&state.pool, &workflow)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+            )
+        })?;
 
     repositories::audit::insert_event(
         &state.pool,
@@ -108,22 +123,44 @@ async fn approve(
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
     let existing = repositories::approvals::get(&state.pool, id)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+            )
+        })?;
 
     match existing {
         Some(wf) if !matches!(wf.status, ApprovalStatus::Pending) => {
-            return Err((StatusCode::CONFLICT, Json(json!({"error": "Workflow is not pending", "code": "CONFLICT"}))))
+            return Err((
+                StatusCode::CONFLICT,
+                Json(json!({"error": "Workflow is not pending", "code": "CONFLICT"})),
+            ))
         }
-        None => return Err((StatusCode::NOT_FOUND, Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})))),
+        None => {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})),
+            ))
+        }
         _ => {}
     }
 
     let approved_by = vec![user.user_id];
     let updated = repositories::approvals::update_status(
-        &state.pool, id, &ApprovalStatus::Approved, &approved_by, req.reason.as_deref(),
+        &state.pool,
+        id,
+        &ApprovalStatus::Approved,
+        &approved_by,
+        req.reason.as_deref(),
     )
     .await
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })?;
 
     match updated {
         Some(wf) => {
@@ -140,7 +177,10 @@ async fn approve(
 
             Ok(Json(json!({"success": true, "approval": wf})))
         }
-        None => Err((StatusCode::NOT_FOUND, Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})))),
+        None => Err((
+            StatusCode::NOT_FOUND,
+            Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})),
+        )),
     }
 }
 
@@ -152,21 +192,43 @@ async fn reject(
 ) -> Result<Json<serde_json::Value>, (StatusCode, Json<serde_json::Value>)> {
     let existing = repositories::approvals::get(&state.pool, id)
         .await
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
+        .map_err(|e| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+            )
+        })?;
 
     match existing {
         Some(wf) if !matches!(wf.status, ApprovalStatus::Pending) => {
-            return Err((StatusCode::CONFLICT, Json(json!({"error": "Workflow is not pending", "code": "CONFLICT"}))))
+            return Err((
+                StatusCode::CONFLICT,
+                Json(json!({"error": "Workflow is not pending", "code": "CONFLICT"})),
+            ))
         }
-        None => return Err((StatusCode::NOT_FOUND, Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})))),
+        None => {
+            return Err((
+                StatusCode::NOT_FOUND,
+                Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})),
+            ))
+        }
         _ => {}
     }
 
     let updated = repositories::approvals::update_status(
-        &state.pool, id, &ApprovalStatus::Rejected, &[], req.reason.as_deref(),
+        &state.pool,
+        id,
+        &ApprovalStatus::Rejected,
+        &[],
+        req.reason.as_deref(),
     )
     .await
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })?;
 
     match updated {
         Some(wf) => {
@@ -183,18 +245,32 @@ async fn reject(
 
             Ok(Json(json!({"success": true, "approval": wf})))
         }
-        None => Err((StatusCode::NOT_FOUND, Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})))),
+        None => Err((
+            StatusCode::NOT_FOUND,
+            Json(json!({"error": "Approval workflow not found", "code": "NOT_FOUND"})),
+        )),
     }
 }
 
 async fn list_audit_logs(
     State(state): State<AppState>,
     Query(query): Query<AuditQuery>,
-) -> Result<Json<Vec<crate::domain::approval::AuditLogEntry>>, (StatusCode, Json<serde_json::Value>)> {
-    repositories::audit::list(&state.pool, query.entity_type.as_deref(), query.action.as_deref(), query.limit)
-        .await
-        .map(Json)
-        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))
+) -> Result<Json<Vec<crate::domain::approval::AuditLogEntry>>, (StatusCode, Json<serde_json::Value>)>
+{
+    repositories::audit::list(
+        &state.pool,
+        query.entity_type.as_deref(),
+        query.action.as_deref(),
+        query.limit,
+    )
+    .await
+    .map(Json)
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })
 }
 
 pub fn approval_routes() -> Router<AppState> {

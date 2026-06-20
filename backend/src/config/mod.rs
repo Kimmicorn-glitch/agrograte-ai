@@ -60,7 +60,9 @@ impl AppConfig {
 
         if config.environment != Environment::Development {
             if config.jwt_secret == "change_me_in_production" {
-                panic!("JWT_SECRET must be changed from the default in non-development environments");
+                panic!(
+                    "JWT_SECRET must be changed from the default in non-development environments"
+                );
             }
             if config.investec_client_id == "your_client_id"
                 || config.investec_client_secret == "your_client_secret"

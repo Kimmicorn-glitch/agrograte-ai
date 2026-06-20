@@ -106,7 +106,8 @@ mod tests {
     #[test]
     fn test_access_token_has_email_and_role() {
         let user_id = Uuid::new_v4();
-        let token = create_access_token(user_id, "admin@corp.com", &Role::Admin, None, "s").unwrap();
+        let token =
+            create_access_token(user_id, "admin@corp.com", &Role::Admin, None, "s").unwrap();
         let claims = validate_token(&token, "s").unwrap();
         assert_eq!(claims.email, "admin@corp.com");
         assert!(matches!(claims.role, Role::Admin));

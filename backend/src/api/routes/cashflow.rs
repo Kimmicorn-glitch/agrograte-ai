@@ -62,10 +62,24 @@ async fn get_cashflow_forecast(
     let mut drrt = state.drrt.write().await;
     {
         let total_volume: f64 = transactions.iter().map(|t| t.amount.amount.abs()).sum();
-        let pending_count = transactions.iter().filter(|t| matches!(t.status, TransactionStatus::Pending)).count();
-        let posted_count = transactions.iter().filter(|t| matches!(t.status, TransactionStatus::Posted)).count();
-        let pending_ratio = if transactions.is_empty() { 0.0 } else { pending_count as f64 / transactions.len() as f64 };
-        let success_ratio = if transactions.is_empty() { 0.0 } else { posted_count as f64 / transactions.len() as f64 };
+        let pending_count = transactions
+            .iter()
+            .filter(|t| matches!(t.status, TransactionStatus::Pending))
+            .count();
+        let posted_count = transactions
+            .iter()
+            .filter(|t| matches!(t.status, TransactionStatus::Posted))
+            .count();
+        let pending_ratio = if transactions.is_empty() {
+            0.0
+        } else {
+            pending_count as f64 / transactions.len() as f64
+        };
+        let success_ratio = if transactions.is_empty() {
+            0.0
+        } else {
+            posted_count as f64 / transactions.len() as f64
+        };
         let mut metrics = FinancialMetrics::default();
         metrics.total_balance = Some(current_balance);
         metrics.transaction_volume_90d = Some(total_volume);
@@ -74,23 +88,58 @@ async fn get_cashflow_forecast(
         metrics.successful_transaction_ratio = Some(success_ratio);
         drrt.update_from_financial_data(&metrics);
     }
-    let forecast = CashFlowForecaster::forecast(business_id, &transactions, Money::zar(current_balance), &*drrt, &config);
+    let forecast = CashFlowForecaster::forecast(
+        business_id,
+        &transactions,
+        Money::zar(current_balance),
+        &*drrt,
+        &config,
+    );
 
-    let scenarios: Vec<ScenarioResponse> = forecast.scenarios.into_iter().map(|s| ScenarioResponse {
-        scenario_type: format!("{:?}", s.scenario_type),
-        projected_balance: s.projected_balance.amount,
-        probability: s.probability,
-    }).collect();
+    let scenarios: Vec<ScenarioResponse> = forecast
+        .scenarios
+        .into_iter()
+        .map(|s| ScenarioResponse {
+            scenario_type: format!("{:?}", s.scenario_type),
+            projected_balance: s.projected_balance.amount,
+            probability: s.probability,
+        })
+        .collect();
 
     let now = chrono::Utc::now();
     let cutoff = now - chrono::Duration::days(config.historical_days);
-    let recent: Vec<&Transaction> = transactions.iter().filter(|t| t.posted_at >= cutoff).collect();
-    let avg_in = if recent.is_empty() { 0.0 } else {
-        let total: f64 = recent.iter().filter(|t| matches!(t.transaction_type, TransactionType::Credit | TransactionType::Payment | TransactionType::Refund)).map(|t| t.amount.amount.abs()).sum();
+    let recent: Vec<&Transaction> = transactions
+        .iter()
+        .filter(|t| t.posted_at >= cutoff)
+        .collect();
+    let avg_in = if recent.is_empty() {
+        0.0
+    } else {
+        let total: f64 = recent
+            .iter()
+            .filter(|t| {
+                matches!(
+                    t.transaction_type,
+                    TransactionType::Credit | TransactionType::Payment | TransactionType::Refund
+                )
+            })
+            .map(|t| t.amount.amount.abs())
+            .sum();
         total / config.historical_days as f64
     };
-    let avg_out = if recent.is_empty() { 0.0 } else {
-        let total: f64 = recent.iter().filter(|t| matches!(t.transaction_type, TransactionType::Debit | TransactionType::Fee)).map(|t| t.amount.amount.abs()).sum();
+    let avg_out = if recent.is_empty() {
+        0.0
+    } else {
+        let total: f64 = recent
+            .iter()
+            .filter(|t| {
+                matches!(
+                    t.transaction_type,
+                    TransactionType::Debit | TransactionType::Fee
+                )
+            })
+            .map(|t| t.amount.amount.abs())
+            .sum();
         total / config.historical_days as f64
     };
 
@@ -134,17 +183,37 @@ async fn get_cashflow_detail(
     let mut drrt = state.drrt.write().await;
     {
         let total_volume: f64 = transactions.iter().map(|t| t.amount.amount.abs()).sum();
-        let pending_count = transactions.iter().filter(|t| matches!(t.status, TransactionStatus::Pending)).count();
-        let posted_count = transactions.iter().filter(|t| matches!(t.status, TransactionStatus::Posted)).count();
+        let pending_count = transactions
+            .iter()
+            .filter(|t| matches!(t.status, TransactionStatus::Pending))
+            .count();
+        let posted_count = transactions
+            .iter()
+            .filter(|t| matches!(t.status, TransactionStatus::Posted))
+            .count();
         let mut metrics = FinancialMetrics::default();
         metrics.total_balance = Some(balance_row.0);
         metrics.transaction_volume_90d = Some(total_volume);
         metrics.transaction_count_90d = Some(transactions.len() as f64);
-        metrics.pending_transaction_ratio = Some(if transactions.is_empty() { 0.0 } else { pending_count as f64 / transactions.len() as f64 });
-        metrics.successful_transaction_ratio = Some(if transactions.is_empty() { 0.0 } else { posted_count as f64 / transactions.len() as f64 });
+        metrics.pending_transaction_ratio = Some(if transactions.is_empty() {
+            0.0
+        } else {
+            pending_count as f64 / transactions.len() as f64
+        });
+        metrics.successful_transaction_ratio = Some(if transactions.is_empty() {
+            0.0
+        } else {
+            posted_count as f64 / transactions.len() as f64
+        });
         drrt.update_from_financial_data(&metrics);
     }
-    let forecast = CashFlowForecaster::forecast(business_id, &transactions, Money::zar(balance_row.0), &*drrt, &config);
+    let forecast = CashFlowForecaster::forecast(
+        business_id,
+        &transactions,
+        Money::zar(balance_row.0),
+        &*drrt,
+        &config,
+    );
 
     Ok(Json(serde_json::json!({
         "forecast_date": forecast.forecast_date.to_rfc3339(),
@@ -170,21 +239,31 @@ async fn get_tax_reserve(
     let drrt = state.drrt.read().await;
 
     let vat_total = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT SUM(vat_amount) FROM invoices WHERE business_id = $1 AND status = 'paid'"
+        "SELECT SUM(vat_amount) FROM invoices WHERE business_id = $1 AND status = 'paid'",
     )
     .bind(business_id)
     .fetch_one(&state.pool)
     .await
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })?
     .unwrap_or(0.0);
 
     let reserved = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT SUM(reserved_tax_funds) FROM accounts WHERE business_id = $1 AND is_active = true"
+        "SELECT SUM(reserved_tax_funds) FROM accounts WHERE business_id = $1 AND is_active = true",
     )
     .bind(business_id)
     .fetch_one(&state.pool)
     .await
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })?
     .unwrap_or(0.0);
 
     let income_tax_est = vat_total * 0.28;

@@ -63,18 +63,78 @@ impl DrrtEngine {
 
     pub fn initialize_tensor_space(&mut self) -> Result<(), String> {
         let dimensions = vec![
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::TransactionValue, weight: 1.0, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::AccountBalance, weight: 1.0, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::CustomerTrust, weight: 0.8, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::SupplierReliability, weight: 0.8, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::InvoiceValidity, weight: 0.9, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::TaxCompliance, weight: 1.0, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::VatAlignment, weight: 1.0, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::CashFlowLiquidity, weight: 0.9, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::RegulatoryRisk, weight: 1.0, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::PaymentVelocity, weight: 0.7, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::CreditExposure, weight: 0.8, activation: 0.5 },
-            TensorDimension { id: Uuid::new_v4(), name: DimensionName::AuditTrail, weight: 0.9, activation: 0.5 },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::TransactionValue,
+                weight: 1.0,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::AccountBalance,
+                weight: 1.0,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::CustomerTrust,
+                weight: 0.8,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::SupplierReliability,
+                weight: 0.8,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::InvoiceValidity,
+                weight: 0.9,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::TaxCompliance,
+                weight: 1.0,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::VatAlignment,
+                weight: 1.0,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::CashFlowLiquidity,
+                weight: 0.9,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::RegulatoryRisk,
+                weight: 1.0,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::PaymentVelocity,
+                weight: 0.7,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::CreditExposure,
+                weight: 0.8,
+                activation: 0.5,
+            },
+            TensorDimension {
+                id: Uuid::new_v4(),
+                name: DimensionName::AuditTrail,
+                weight: 0.9,
+                activation: 0.5,
+            },
         ];
         self.primary_tensor = RelationalTensor::new(dimensions);
         Ok(())
@@ -108,31 +168,15 @@ impl DrrtEngine {
             dim.activation = match dim.name {
                 DimensionName::TransactionValue => tv,
                 DimensionName::AccountBalance => ab,
-                DimensionName::CustomerTrust => {
-                    m.successful_transaction_ratio.unwrap_or(0.5)
-                }
-                DimensionName::SupplierReliability => {
-                    1.0 - m.outflow_volatility.unwrap_or(0.5)
-                }
-                DimensionName::InvoiceValidity => {
-                    m.paid_invoice_ratio.unwrap_or(0.5)
-                }
-                DimensionName::TaxCompliance => {
-                    m.compliance_score.unwrap_or(0.5)
-                }
-                DimensionName::VatAlignment => {
-                    m.vat_compliance_ratio.unwrap_or(0.5)
-                }
-                DimensionName::CashFlowLiquidity => {
-                    m.liquidity_ratio.unwrap_or(0.0)
-                }
-                DimensionName::RegulatoryRisk => {
-                    1.0 - m.compliance_score.unwrap_or(0.5)
-                }
+                DimensionName::CustomerTrust => m.successful_transaction_ratio.unwrap_or(0.5),
+                DimensionName::SupplierReliability => 1.0 - m.outflow_volatility.unwrap_or(0.5),
+                DimensionName::InvoiceValidity => m.paid_invoice_ratio.unwrap_or(0.5),
+                DimensionName::TaxCompliance => m.compliance_score.unwrap_or(0.5),
+                DimensionName::VatAlignment => m.vat_compliance_ratio.unwrap_or(0.5),
+                DimensionName::CashFlowLiquidity => m.liquidity_ratio.unwrap_or(0.0),
+                DimensionName::RegulatoryRisk => 1.0 - m.compliance_score.unwrap_or(0.5),
                 DimensionName::PaymentVelocity => pv,
-                DimensionName::CreditExposure => {
-                    m.pending_transaction_ratio.unwrap_or(0.0)
-                }
+                DimensionName::CreditExposure => m.pending_transaction_ratio.unwrap_or(0.0),
                 DimensionName::AuditTrail => {
                     let vat = m.vat_compliance_ratio.unwrap_or(0.5);
                     let tax = m.tax_compliance_ratio.unwrap_or(0.5);
@@ -158,33 +202,159 @@ impl DrrtEngine {
         };
         let nvol = self.fin_metric(m.transaction_volume_90d, 0.0, 10_000_000.0);
 
-        self.relate(DimensionName::TransactionValue, DimensionName::AccountBalance, RelationType::FinancialFlow, RelationSign::Positive, nvol * bal);
-        self.relate(DimensionName::AccountBalance, DimensionName::CashFlowLiquidity, RelationType::FinancialFlow, RelationSign::Positive, lr);
-        self.relate(DimensionName::CashFlowLiquidity, DimensionName::TransactionValue, RelationType::FinancialFlow, RelationSign::Positive, lr * nvol);
-        self.relate(DimensionName::CashFlowLiquidity, DimensionName::RegulatoryRisk, RelationType::ComplianceDependency, RelationSign::Negative, 1.0 - lr);
+        self.relate(
+            DimensionName::TransactionValue,
+            DimensionName::AccountBalance,
+            RelationType::FinancialFlow,
+            RelationSign::Positive,
+            nvol * bal,
+        );
+        self.relate(
+            DimensionName::AccountBalance,
+            DimensionName::CashFlowLiquidity,
+            RelationType::FinancialFlow,
+            RelationSign::Positive,
+            lr,
+        );
+        self.relate(
+            DimensionName::CashFlowLiquidity,
+            DimensionName::TransactionValue,
+            RelationType::FinancialFlow,
+            RelationSign::Positive,
+            lr * nvol,
+        );
+        self.relate(
+            DimensionName::CashFlowLiquidity,
+            DimensionName::RegulatoryRisk,
+            RelationType::ComplianceDependency,
+            RelationSign::Negative,
+            1.0 - lr,
+        );
 
-        self.relate(DimensionName::TransactionValue, DimensionName::TaxCompliance, RelationType::TemporalSequence, RelationSign::Positive, nvol * cs);
-        self.relate(DimensionName::TaxCompliance, DimensionName::VatAlignment, RelationType::ComplianceDependency, RelationSign::Positive, vcr);
-        self.relate(DimensionName::TaxCompliance, DimensionName::RegulatoryRisk, RelationType::ComplianceDependency, RelationSign::Negative, 1.0 - cs);
-        self.relate(DimensionName::VatAlignment, DimensionName::RegulatoryRisk, RelationType::ComplianceDependency, RelationSign::Negative, 1.0 - vcr);
-        self.relate(DimensionName::TaxCompliance, DimensionName::AuditTrail, RelationType::AuditTrail, RelationSign::Positive, cs * (vcr + tcr) / 2.0);
+        self.relate(
+            DimensionName::TransactionValue,
+            DimensionName::TaxCompliance,
+            RelationType::TemporalSequence,
+            RelationSign::Positive,
+            nvol * cs,
+        );
+        self.relate(
+            DimensionName::TaxCompliance,
+            DimensionName::VatAlignment,
+            RelationType::ComplianceDependency,
+            RelationSign::Positive,
+            vcr,
+        );
+        self.relate(
+            DimensionName::TaxCompliance,
+            DimensionName::RegulatoryRisk,
+            RelationType::ComplianceDependency,
+            RelationSign::Negative,
+            1.0 - cs,
+        );
+        self.relate(
+            DimensionName::VatAlignment,
+            DimensionName::RegulatoryRisk,
+            RelationType::ComplianceDependency,
+            RelationSign::Negative,
+            1.0 - vcr,
+        );
+        self.relate(
+            DimensionName::TaxCompliance,
+            DimensionName::AuditTrail,
+            RelationType::AuditTrail,
+            RelationSign::Positive,
+            cs * (vcr + tcr) / 2.0,
+        );
 
-        self.relate(DimensionName::InvoiceValidity, DimensionName::CustomerTrust, RelationType::TrustLink, RelationSign::Positive, pir);
-        self.relate(DimensionName::CustomerTrust, DimensionName::SupplierReliability, RelationType::TrustLink, RelationSign::Positive, sr);
-        self.relate(DimensionName::AccountBalance, DimensionName::CustomerTrust, RelationType::TrustLink, RelationSign::Positive, bal);
-        self.relate(DimensionName::InvoiceValidity, DimensionName::TransactionValue, RelationType::FinancialFlow, RelationSign::Positive, pir * nvol);
+        self.relate(
+            DimensionName::InvoiceValidity,
+            DimensionName::CustomerTrust,
+            RelationType::TrustLink,
+            RelationSign::Positive,
+            pir,
+        );
+        self.relate(
+            DimensionName::CustomerTrust,
+            DimensionName::SupplierReliability,
+            RelationType::TrustLink,
+            RelationSign::Positive,
+            sr,
+        );
+        self.relate(
+            DimensionName::AccountBalance,
+            DimensionName::CustomerTrust,
+            RelationType::TrustLink,
+            RelationSign::Positive,
+            bal,
+        );
+        self.relate(
+            DimensionName::InvoiceValidity,
+            DimensionName::TransactionValue,
+            RelationType::FinancialFlow,
+            RelationSign::Positive,
+            pir * nvol,
+        );
 
-        self.relate(DimensionName::PaymentVelocity, DimensionName::CashFlowLiquidity, RelationType::CausalDependency, RelationSign::Negative, vel);
-        self.relate(DimensionName::CreditExposure, DimensionName::RegulatoryRisk, RelationType::ComplianceDependency, RelationSign::Positive, pr);
-        self.relate(DimensionName::RegulatoryRisk, DimensionName::AuditTrail, RelationType::AuditTrail, RelationSign::Negative, 1.0 - cs);
-        self.relate(DimensionName::PaymentVelocity, DimensionName::CreditExposure, RelationType::TemporalSequence, RelationSign::Positive, vel * pr);
+        self.relate(
+            DimensionName::PaymentVelocity,
+            DimensionName::CashFlowLiquidity,
+            RelationType::CausalDependency,
+            RelationSign::Negative,
+            vel,
+        );
+        self.relate(
+            DimensionName::CreditExposure,
+            DimensionName::RegulatoryRisk,
+            RelationType::ComplianceDependency,
+            RelationSign::Positive,
+            pr,
+        );
+        self.relate(
+            DimensionName::RegulatoryRisk,
+            DimensionName::AuditTrail,
+            RelationType::AuditTrail,
+            RelationSign::Negative,
+            1.0 - cs,
+        );
+        self.relate(
+            DimensionName::PaymentVelocity,
+            DimensionName::CreditExposure,
+            RelationType::TemporalSequence,
+            RelationSign::Positive,
+            vel * pr,
+        );
 
-        self.relate(DimensionName::SupplierReliability, DimensionName::CashFlowLiquidity, RelationType::CausalDependency, RelationSign::Positive, sr * lr);
-        self.relate(DimensionName::CustomerTrust, DimensionName::RegulatoryRisk, RelationType::TrustLink, RelationSign::Negative, 1.0 - sr);
+        self.relate(
+            DimensionName::SupplierReliability,
+            DimensionName::CashFlowLiquidity,
+            RelationType::CausalDependency,
+            RelationSign::Positive,
+            sr * lr,
+        );
+        self.relate(
+            DimensionName::CustomerTrust,
+            DimensionName::RegulatoryRisk,
+            RelationType::TrustLink,
+            RelationSign::Negative,
+            1.0 - sr,
+        );
 
         let audit = (vcr + tcr) / 2.0;
-        self.relate(DimensionName::AuditTrail, DimensionName::TaxCompliance, RelationType::AuditTrail, RelationSign::Positive, audit);
-        self.relate(DimensionName::AuditTrail, DimensionName::InvoiceValidity, RelationType::AuditTrail, RelationSign::Positive, audit * pir);
+        self.relate(
+            DimensionName::AuditTrail,
+            DimensionName::TaxCompliance,
+            RelationType::AuditTrail,
+            RelationSign::Positive,
+            audit,
+        );
+        self.relate(
+            DimensionName::AuditTrail,
+            DimensionName::InvoiceValidity,
+            RelationType::AuditTrail,
+            RelationSign::Positive,
+            audit * pir,
+        );
     }
 
     fn relate(

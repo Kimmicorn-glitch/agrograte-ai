@@ -15,7 +15,11 @@ pub async fn list_rules(pool: &PgPool) -> Result<Vec<BankingRule>, sqlx::Error> 
         .collect()
 }
 
-pub async fn create_rule(pool: &PgPool, rule: &BankingRule, business_id: Uuid) -> Result<(), sqlx::Error> {
+pub async fn create_rule(
+    pool: &PgPool,
+    rule: &BankingRule,
+    business_id: Uuid,
+) -> Result<(), sqlx::Error> {
     let event_type_str = format!("{:?}", rule.event_type);
     let conditions_json = serde_json::to_value(&rule.conditions).unwrap_or_default();
     let actions_json = serde_json::to_value(&rule.actions).unwrap_or_default();

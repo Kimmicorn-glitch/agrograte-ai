@@ -130,7 +130,11 @@ async fn toggle_rule(
             )
         })?;
 
-    let action = if is_active { "rule_activated" } else { "rule_deactivated" };
+    let action = if is_active {
+        "rule_activated"
+    } else {
+        "rule_deactivated"
+    };
     repositories::audit::insert_event(
         &state.pool,
         user.user_id,
@@ -142,7 +146,9 @@ async fn toggle_rule(
     .await
     .ok();
 
-    Ok(Json(serde_json::json!({"success": true, "is_active": is_active})))
+    Ok(Json(
+        serde_json::json!({"success": true, "is_active": is_active}),
+    ))
 }
 
 async fn delete_rule(

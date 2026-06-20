@@ -80,7 +80,11 @@ async fn get_financial_health(
     let mut drrt = state.drrt.write().await;
     {
         let free_cash = total_balance - reserved;
-        let liquidity_ratio = if total_balance > 0.0 { free_cash / total_balance } else { 0.0 };
+        let liquidity_ratio = if total_balance > 0.0 {
+            free_cash / total_balance
+        } else {
+            0.0
+        };
         let mut metrics = FinancialMetrics::default();
         metrics.revenue = Some(base_revenue);
         metrics.expenses = Some(base_expenses);
@@ -93,7 +97,11 @@ async fn get_financial_health(
     let coherence = drrt.global_coherence;
 
     let free_cash = total_balance - reserved;
-    let liquidity_ratio = if total_balance > 0.0 { free_cash / total_balance } else { 0.0 };
+    let liquidity_ratio = if total_balance > 0.0 {
+        free_cash / total_balance
+    } else {
+        0.0
+    };
 
     let (liquidity_str, liquidity_score) = if liquidity_ratio > 0.3 {
         ("Strong".to_string(), liquidity_ratio)
@@ -113,9 +121,21 @@ async fn get_financial_health(
     };
 
     let compliance_score = coherence * 100.0;
-    let revenue = if base_revenue > 0.0 { base_revenue } else { coherence * 1_000_000.0 };
-    let expenses = if base_expenses > 0.0 { base_expenses } else { revenue * 0.6 };
-    let profit = if base_profit > 0.0 { base_profit } else { revenue - expenses };
+    let revenue = if base_revenue > 0.0 {
+        base_revenue
+    } else {
+        coherence * 1_000_000.0
+    };
+    let expenses = if base_expenses > 0.0 {
+        base_expenses
+    } else {
+        revenue * 0.6
+    };
+    let profit = if base_profit > 0.0 {
+        base_profit
+    } else {
+        revenue - expenses
+    };
     let health = ((liquidity_score + risk_score + coherence) / 3.0 * 100.0).round();
 
     Ok(Json(FinancialHealthResponse {
@@ -163,7 +183,11 @@ async fn get_financial_health_detail(
 
     let mut drrt = state.drrt.write().await;
     {
-        let liquidity_ratio = if total_balance > 0.0 { free_cash / total_balance } else { 0.0 };
+        let liquidity_ratio = if total_balance > 0.0 {
+            free_cash / total_balance
+        } else {
+            0.0
+        };
         let mut metrics = FinancialMetrics::default();
         metrics.revenue = Some(base_revenue);
         metrics.expenses = Some(base_expenses);
@@ -175,7 +199,11 @@ async fn get_financial_health_detail(
     }
     let coherence = drrt.global_coherence;
     let contradiction = drrt.global_contradiction;
-    let liquidity_ratio = if total_balance > 0.0 { free_cash / total_balance } else { 0.0 };
+    let liquidity_ratio = if total_balance > 0.0 {
+        free_cash / total_balance
+    } else {
+        0.0
+    };
 
     let (liquidity_str, liquidity_score) = if liquidity_ratio > 0.3 {
         ("Strong".to_string(), liquidity_ratio)
@@ -195,10 +223,26 @@ async fn get_financial_health_detail(
     };
 
     let compliance_val = coherence * 100.0;
-    let revenue = if base_revenue > 0.0 { base_revenue } else { coherence * 1_000_000.0 };
-    let expenses = if base_expenses > 0.0 { base_expenses } else { revenue * 0.6 };
-    let profit = if base_profit > 0.0 { base_profit } else { revenue - expenses };
-    let margin = if revenue > 0.0 { (profit / revenue) * 100.0 } else { 0.0 };
+    let revenue = if base_revenue > 0.0 {
+        base_revenue
+    } else {
+        coherence * 1_000_000.0
+    };
+    let expenses = if base_expenses > 0.0 {
+        base_expenses
+    } else {
+        revenue * 0.6
+    };
+    let profit = if base_profit > 0.0 {
+        base_profit
+    } else {
+        revenue - expenses
+    };
+    let margin = if revenue > 0.0 {
+        (profit / revenue) * 100.0
+    } else {
+        0.0
+    };
     let health = ((liquidity_score + risk_score + coherence) / 3.0 * 100.0).round();
 
     let dimensions = [
@@ -222,7 +266,13 @@ async fn get_financial_health_detail(
             dimension: name.to_string(),
             score: (score * 100.0).round() / 100.0,
             weight: 1.0,
-            status: if *score > 0.7 { "healthy".into() } else if *score > 0.4 { "warning".into() } else { "critical".into() },
+            status: if *score > 0.7 {
+                "healthy".into()
+            } else if *score > 0.4 {
+                "warning".into()
+            } else {
+                "critical".into()
+            },
         })
         .collect();
 
@@ -246,5 +296,8 @@ async fn get_financial_health_detail(
 pub fn financial_routes() -> Router<AppState> {
     Router::new()
         .route("/api/financial/health", get(get_financial_health))
-        .route("/api/financial/health/detail", get(get_financial_health_detail))
+        .route(
+            "/api/financial/health/detail",
+            get(get_financial_health_detail),
+        )
 }

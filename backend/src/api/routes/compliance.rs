@@ -100,17 +100,30 @@ async fn get_compliance_summary(
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
 
-    let vat_returns: Vec<crate::domain::models::VatReturn> = vat_rows.into_iter().map(|r| r.into()).collect();
-    let tax_records: Vec<crate::domain::models::TaxRecord> = tax_rows.into_iter().map(|r| r.into()).collect();
+    let vat_returns: Vec<crate::domain::models::VatReturn> =
+        vat_rows.into_iter().map(|r| r.into()).collect();
+    let tax_records: Vec<crate::domain::models::TaxRecord> =
+        tax_rows.into_iter().map(|r| r.into()).collect();
 
     let mut drrt = state.drrt.write().await;
     {
         let submitted = vat_returns.iter().filter(|r| r.is_submitted).count();
         let total_vat = vat_returns.len();
-        let vat_ratio = if total_vat > 0 { submitted as f64 / total_vat as f64 } else { 0.0 };
-        let paid = tax_records.iter().filter(|r| r.amount_paid.amount >= r.amount_due.amount).count();
+        let vat_ratio = if total_vat > 0 {
+            submitted as f64 / total_vat as f64
+        } else {
+            0.0
+        };
+        let paid = tax_records
+            .iter()
+            .filter(|r| r.amount_paid.amount >= r.amount_due.amount)
+            .count();
         let total_tax = tax_records.len();
-        let tax_ratio = if total_tax > 0 { paid as f64 / total_tax as f64 } else { 0.0 };
+        let tax_ratio = if total_tax > 0 {
+            paid as f64 / total_tax as f64
+        } else {
+            0.0
+        };
         let mut metrics = FinancialMetrics::default();
         metrics.vat_compliance_ratio = Some(vat_ratio);
         metrics.tax_compliance_ratio = Some(tax_ratio);
@@ -119,7 +132,12 @@ async fn get_compliance_summary(
     }
     let coherence = drrt.global_coherence;
 
-    let report = SarsCompliance::generate_compliance_report(business_id, &vat_returns, &tax_records, coherence);
+    let report = SarsCompliance::generate_compliance_report(
+        business_id,
+        &vat_returns,
+        &tax_records,
+        coherence,
+    );
     let outstanding = report.vat_compliance.outstanding_returns.len() as u32;
 
     Ok(Json(ComplianceSummaryResponse {
@@ -153,17 +171,30 @@ async fn get_compliance_report(
     .await
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
 
-    let vat_returns: Vec<crate::domain::models::VatReturn> = vat_rows.into_iter().map(|r| r.into()).collect();
-    let tax_records: Vec<crate::domain::models::TaxRecord> = tax_rows.into_iter().map(|r| r.into()).collect();
+    let vat_returns: Vec<crate::domain::models::VatReturn> =
+        vat_rows.into_iter().map(|r| r.into()).collect();
+    let tax_records: Vec<crate::domain::models::TaxRecord> =
+        tax_rows.into_iter().map(|r| r.into()).collect();
 
     let mut drrt = state.drrt.write().await;
     {
         let submitted = vat_returns.iter().filter(|r| r.is_submitted).count();
         let total_vat = vat_returns.len();
-        let vat_ratio = if total_vat > 0 { submitted as f64 / total_vat as f64 } else { 0.0 };
-        let paid = tax_records.iter().filter(|r| r.amount_paid.amount >= r.amount_due.amount).count();
+        let vat_ratio = if total_vat > 0 {
+            submitted as f64 / total_vat as f64
+        } else {
+            0.0
+        };
+        let paid = tax_records
+            .iter()
+            .filter(|r| r.amount_paid.amount >= r.amount_due.amount)
+            .count();
         let total_tax = tax_records.len();
-        let tax_ratio = if total_tax > 0 { paid as f64 / total_tax as f64 } else { 0.0 };
+        let tax_ratio = if total_tax > 0 {
+            paid as f64 / total_tax as f64
+        } else {
+            0.0
+        };
         let mut metrics = FinancialMetrics::default();
         metrics.vat_compliance_ratio = Some(vat_ratio);
         metrics.tax_compliance_ratio = Some(tax_ratio);
@@ -172,7 +203,12 @@ async fn get_compliance_report(
     }
     let coherence = drrt.global_coherence;
 
-    let report = SarsCompliance::generate_compliance_report(business_id, &vat_returns, &tax_records, coherence);
+    let report = SarsCompliance::generate_compliance_report(
+        business_id,
+        &vat_returns,
+        &tax_records,
+        coherence,
+    );
 
     Ok(Json(FullComplianceReportResponse {
         overall_score: report.overall_score,
@@ -180,13 +216,17 @@ async fn get_compliance_report(
         vat_compliant: report.vat_compliance.is_compliant,
         tax_score: report.income_tax_compliance.score,
         tax_compliant: report.income_tax_compliance.is_compliant,
-        violations: report.violations.into_iter().map(|v| ViolationResponse {
-            code: v.code,
-            severity: format!("{:?}", v.severity),
-            description: v.description,
-            regulation_ref: v.regulation_ref,
-            remediation: v.remediation,
-        }).collect(),
+        violations: report
+            .violations
+            .into_iter()
+            .map(|v| ViolationResponse {
+                code: v.code,
+                severity: format!("{:?}", v.severity),
+                description: v.description,
+                regulation_ref: v.regulation_ref,
+                remediation: v.remediation,
+            })
+            .collect(),
         recommendations: report.recommendations,
         drrt_coherence: coherence,
     }))
@@ -210,29 +250,41 @@ async fn get_vat_returns(
         let now = Utc::now();
         let year = now.year();
         let periods = VatEngine::get_vat_periods(year);
-        let returns: Vec<VatReturnResponse> = periods.into_iter().enumerate().map(|(i, (start, end))| VatReturnResponse {
-            period: format!("{}-{}", start.format("%b"), end.format("%b")),
-            start: start.to_rfc3339(),
-            end: end.to_rfc3339(),
-            vat_on_sales: 0.0,
-            vat_on_purchases: 0.0,
-            net_vat_due: 0.0,
-            is_submitted: i < now.month0() as usize,
-            penalties: 0.0,
-        }).collect();
+        let returns: Vec<VatReturnResponse> = periods
+            .into_iter()
+            .enumerate()
+            .map(|(i, (start, end))| VatReturnResponse {
+                period: format!("{}-{}", start.format("%b"), end.format("%b")),
+                start: start.to_rfc3339(),
+                end: end.to_rfc3339(),
+                vat_on_sales: 0.0,
+                vat_on_purchases: 0.0,
+                net_vat_due: 0.0,
+                is_submitted: i < now.month0() as usize,
+                penalties: 0.0,
+            })
+            .collect();
         return Ok(Json(returns));
     }
 
-    Ok(Json(rows.into_iter().map(|r| VatReturnResponse {
-        period: format!("{} to {}", r.period_start.format("%Y-%m-%d"), r.period_end.format("%Y-%m-%d")),
-        start: r.period_start.to_rfc3339(),
-        end: r.period_end.to_rfc3339(),
-        vat_on_sales: r.vat_on_sales,
-        vat_on_purchases: r.vat_on_purchases,
-        net_vat_due: r.net_vat_due,
-        is_submitted: r.is_submitted,
-        penalties: r.penalties,
-    }).collect()))
+    Ok(Json(
+        rows.into_iter()
+            .map(|r| VatReturnResponse {
+                period: format!(
+                    "{} to {}",
+                    r.period_start.format("%Y-%m-%d"),
+                    r.period_end.format("%Y-%m-%d")
+                ),
+                start: r.period_start.to_rfc3339(),
+                end: r.period_end.to_rfc3339(),
+                vat_on_sales: r.vat_on_sales,
+                vat_on_purchases: r.vat_on_purchases,
+                net_vat_due: r.net_vat_due,
+                is_submitted: r.is_submitted,
+                penalties: r.penalties,
+            })
+            .collect(),
+    ))
 }
 
 async fn get_tax_records(
@@ -250,26 +302,28 @@ async fn get_tax_records(
     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?;
 
     if rows.is_empty() {
-        return Ok(Json(vec![
-            TaxRecordResponse {
-                tax_period: "2025".into(),
-                tax_type: "IncomeTax".into(),
-                amount_due: 0.0,
-                amount_paid: 0.0,
-                balance: 0.0,
-                status: "Pending".into(),
-            },
-        ]));
+        return Ok(Json(vec![TaxRecordResponse {
+            tax_period: "2025".into(),
+            tax_type: "IncomeTax".into(),
+            amount_due: 0.0,
+            amount_paid: 0.0,
+            balance: 0.0,
+            status: "Pending".into(),
+        }]));
     }
 
-    Ok(Json(rows.into_iter().map(|r| TaxRecordResponse {
-        tax_period: r.tax_period,
-        tax_type: r.tax_type,
-        amount_due: r.amount_due,
-        amount_paid: r.amount_paid,
-        balance: r.balance,
-        status: r.status,
-    }).collect()))
+    Ok(Json(
+        rows.into_iter()
+            .map(|r| TaxRecordResponse {
+                tax_period: r.tax_period,
+                tax_type: r.tax_type,
+                amount_due: r.amount_due,
+                amount_paid: r.amount_paid,
+                balance: r.balance,
+                status: r.status,
+            })
+            .collect(),
+    ))
 }
 
 async fn get_tax_reserve(
@@ -289,12 +343,17 @@ async fn get_tax_reserve(
     let (_total_invoiced, total_vat) = invoice_rows;
 
     let reserved = sqlx::query_scalar::<_, Option<f64>>(
-        "SELECT SUM(reserved_tax_funds) FROM accounts WHERE business_id = $1 AND is_active = true"
+        "SELECT SUM(reserved_tax_funds) FROM accounts WHERE business_id = $1 AND is_active = true",
     )
     .bind(business_id)
     .fetch_one(&state.pool)
     .await
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })?
     .unwrap_or(0.0);
 
     let mut drrt = state.drrt.write().await;
@@ -307,7 +366,11 @@ async fn get_tax_reserve(
     let calc = TaxReserveEngine::calculate_reserves(business_id, &[], &*drrt, reserved);
 
     Ok(Json(TaxReserveResponse {
-        estimated_vat_liability: if total_vat > 0.0 { total_vat } else { calc.estimated_vat_liability.amount },
+        estimated_vat_liability: if total_vat > 0.0 {
+            total_vat
+        } else {
+            calc.estimated_vat_liability.amount
+        },
         estimated_income_tax: calc.estimated_income_tax.amount,
         estimated_paye: calc.estimated_paye.amount,
         total_reserve_required: calc.total_reserve_required.amount,

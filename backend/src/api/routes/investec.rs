@@ -63,12 +63,17 @@ async fn get_banking_summary(
     .unwrap_or(0);
 
     let rules = sqlx::query_scalar::<_, Option<i64>>(
-        "SELECT COUNT(*) FROM programmable_rules WHERE business_id = $1"
+        "SELECT COUNT(*) FROM programmable_rules WHERE business_id = $1",
     )
     .bind(business_id)
     .fetch_one(&state.pool)
     .await
-    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"}))))?
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": e.to_string(), "code": "DATABASE_ERROR"})),
+        )
+    })?
     .unwrap_or(0);
 
     let workflows = sqlx::query_scalar::<_, Option<i64>>(
@@ -85,7 +90,11 @@ async fn get_banking_summary(
     let mut drrt = state.drrt.write().await;
     {
         let free_cash = balance - reserved;
-        let liquidity_ratio = if balance > 0.0 { free_cash / balance } else { 0.0 };
+        let liquidity_ratio = if balance > 0.0 {
+            free_cash / balance
+        } else {
+            0.0
+        };
         let mut metrics = FinancialMetrics::default();
         metrics.total_balance = Some(balance);
         metrics.free_cash = Some(free_cash);
@@ -121,7 +130,10 @@ async fn get_transactions(State(state): State<AppState>) -> Json<Vec<serde_json:
             Ok(accounts) => {
                 let mut all_txns = Vec::new();
                 for account in accounts {
-                    if let Ok(txns) = client.get_transactions(&account.account_id, None, None).await {
+                    if let Ok(txns) = client
+                        .get_transactions(&account.account_id, None, None)
+                        .await
+                    {
                         for t in txns {
                             all_txns.push(serde_json::json!(t));
                         }
@@ -151,7 +163,10 @@ async fn get_auth_url(State(state): State<AppState>) -> Json<AuthUrlResponse> {
         "https://openapi.investec.com/identity/v2/oauth2/authorize?client_id={}&redirect_uri={}&response_type=code&state={}",
         client_id, redirect_uri, csrf_state
     );
-    Json(AuthUrlResponse { url, state: csrf_state })
+    Json(AuthUrlResponse {
+        url,
+        state: csrf_state,
+    })
 }
 
 async fn handle_callback(Query(_query): Query<CallbackQuery>) -> Json<serde_json::Value> {
@@ -165,15 +180,22 @@ async fn get_investec_accounts(State(state): State<AppState>) -> Json<Vec<serde_
     let mut client = (*state.investec).clone();
     match client.authenticate().await {
         Ok(()) => match client.get_accounts().await {
-            Ok(accounts) => Json(accounts.into_iter().map(|a| serde_json::json!({
-                "account_id": a.account_id,
-                "account_number": a.account_number,
-                "account_type": a.account_type,
-                "account_name": a.account_name,
-                "current_balance": a.current_balance,
-                "available_balance": a.available_balance,
-                "currency": a.currency,
-            })).collect()),
+            Ok(accounts) => Json(
+                accounts
+                    .into_iter()
+                    .map(|a| {
+                        serde_json::json!({
+                            "account_id": a.account_id,
+                            "account_number": a.account_number,
+                            "account_type": a.account_type,
+                            "account_name": a.account_name,
+                            "current_balance": a.current_balance,
+                            "available_balance": a.available_balance,
+                            "currency": a.currency,
+                        })
+                    })
+                    .collect(),
+            ),
             Err(_) => Json(Vec::new()),
         },
         Err(_) => Json(Vec::new()),
@@ -187,14 +209,20 @@ async fn get_investec_transactions(
     let mut client = (*state.investec).clone();
     match client.authenticate().await {
         Ok(()) => match client.get_transactions(&account_id, None, None).await {
-            Ok(txns) => Json(txns.into_iter().map(|t| serde_json::json!({
-                "transaction_id": t.transaction_id,
-                "amount": t.amount,
-                "description": t.description,
-                "transaction_type": t.transaction_type,
-                "posting_date": t.transaction_date,
-                "merchant": t.merchant,
-            })).collect()),
+            Ok(txns) => Json(
+                txns.into_iter()
+                    .map(|t| {
+                        serde_json::json!({
+                            "transaction_id": t.transaction_id,
+                            "amount": t.amount,
+                            "description": t.description,
+                            "transaction_type": t.transaction_type,
+                            "posting_date": t.transaction_date,
+                            "merchant": t.merchant,
+                        })
+                    })
+                    .collect(),
+            ),
             Err(_) => Json(Vec::new()),
         },
         Err(_) => Json(Vec::new()),
@@ -210,5 +238,8 @@ pub fn investec_routes() -> Router<AppState> {
         .route("/api/investec/auth-url", get(get_auth_url))
         .route("/api/investec/callback", get(handle_callback))
         .route("/api/investec/accounts", get(get_investec_accounts))
-        .route("/api/investec/accounts/{account_id}/transactions", get(get_investec_transactions))
+        .route(
+            "/api/investec/accounts/{account_id}/transactions",
+            get(get_investec_transactions),
+        )
 }

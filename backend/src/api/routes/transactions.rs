@@ -61,12 +61,19 @@ async fn get_transaction_intelligence(
     let grand_total: f64 = cat_rows.iter().map(|r| r.2).sum();
     let total_count: i64 = cat_rows.iter().map(|r| r.1).sum();
 
-    let categories: Vec<CategoryBreakdown> = cat_rows.into_iter().map(|(cat, count, total)| CategoryBreakdown {
-        category: cat,
-        count: count as u32,
-        total_amount: (total * 100.0).round() / 100.0,
-        percentage: if grand_total > 0.0 { (total / grand_total * 100.0 * 100.0).round() / 100.0 } else { 0.0 },
-    }).collect();
+    let categories: Vec<CategoryBreakdown> = cat_rows
+        .into_iter()
+        .map(|(cat, count, total)| CategoryBreakdown {
+            category: cat,
+            count: count as u32,
+            total_amount: (total * 100.0).round() / 100.0,
+            percentage: if grand_total > 0.0 {
+                (total / grand_total * 100.0 * 100.0).round() / 100.0
+            } else {
+                0.0
+            },
+        })
+        .collect();
 
     {
         let mut metrics = FinancialMetrics::default();
@@ -75,17 +82,28 @@ async fn get_transaction_intelligence(
         drrt.update_from_financial_data(&metrics);
     }
 
-    let patterns: Vec<PatternInfo> = drrt.memory.pattern_memory.iter().map(|p| PatternInfo {
-        pattern_type: format!("{:?}", p.pattern_type),
-        frequency: p.frequency,
-        confidence: p.confidence,
-        last_observed: p.last_observed,
-    }).collect();
+    let patterns: Vec<PatternInfo> = drrt
+        .memory
+        .pattern_memory
+        .iter()
+        .map(|p| PatternInfo {
+            pattern_type: format!("{:?}", p.pattern_type),
+            frequency: p.frequency,
+            confidence: p.confidence,
+            last_observed: p.last_observed,
+        })
+        .collect();
 
     let status = drrt.check_collapse();
     let coherence = drrt.global_coherence;
     let contradiction = drrt.global_contradiction;
-    let severity = if coherence < 0.3 { "critical".to_string() } else if coherence < 0.5 { "warning".to_string() } else { "normal".to_string() };
+    let severity = if coherence < 0.3 {
+        "critical".to_string()
+    } else if coherence < 0.5 {
+        "warning".to_string()
+    } else {
+        "normal".to_string()
+    };
 
     let anomalies = if categories.is_empty() && patterns.is_empty() {
         vec![AnomalyInfo {
@@ -129,34 +147,50 @@ async fn get_categories(
 
     let grand_total: f64 = rows.iter().map(|r| r.2).sum();
 
-    Ok(Json(rows.into_iter().map(|(cat, count, total)| CategoryBreakdown {
-        category: cat,
-        count: count as u32,
-        total_amount: (total * 100.0).round() / 100.0,
-        percentage: if grand_total > 0.0 { (total / grand_total * 100.0 * 100.0).round() / 100.0 } else { 0.0 },
-    }).collect()))
+    Ok(Json(
+        rows.into_iter()
+            .map(|(cat, count, total)| CategoryBreakdown {
+                category: cat,
+                count: count as u32,
+                total_amount: (total * 100.0).round() / 100.0,
+                percentage: if grand_total > 0.0 {
+                    (total / grand_total * 100.0 * 100.0).round() / 100.0
+                } else {
+                    0.0
+                },
+            })
+            .collect(),
+    ))
 }
 
-async fn get_patterns(
-    State(state): State<AppState>,
-) -> Json<Vec<PatternInfo>> {
+async fn get_patterns(State(state): State<AppState>) -> Json<Vec<PatternInfo>> {
     let drrt = state.drrt.read().await;
-    Json(drrt.memory.pattern_memory.iter().map(|p| PatternInfo {
-        pattern_type: format!("{:?}", p.pattern_type),
-        frequency: p.frequency,
-        confidence: p.confidence,
-        last_observed: p.last_observed,
-    }).collect())
+    Json(
+        drrt.memory
+            .pattern_memory
+            .iter()
+            .map(|p| PatternInfo {
+                pattern_type: format!("{:?}", p.pattern_type),
+                frequency: p.frequency,
+                confidence: p.confidence,
+                last_observed: p.last_observed,
+            })
+            .collect(),
+    )
 }
 
-async fn get_anomalies(
-    State(state): State<AppState>,
-) -> Json<Vec<AnomalyInfo>> {
+async fn get_anomalies(State(state): State<AppState>) -> Json<Vec<AnomalyInfo>> {
     let mut drrt = state.drrt.write().await;
     let status = drrt.check_collapse();
     let coherence = drrt.global_coherence;
     let contradiction = drrt.global_contradiction;
-    let severity = if coherence < 0.3 { "critical".to_string() } else if coherence < 0.5 { "warning".to_string() } else { "normal".to_string() };
+    let severity = if coherence < 0.3 {
+        "critical".to_string()
+    } else if coherence < 0.5 {
+        "warning".to_string()
+    } else {
+        "normal".to_string()
+    };
     Json(vec![AnomalyInfo {
         anomaly_type: format!("{:?}", status),
         severity,
@@ -168,7 +202,10 @@ async fn get_anomalies(
 
 pub fn transaction_routes() -> Router<AppState> {
     Router::new()
-        .route("/api/transactions/intelligence", get(get_transaction_intelligence))
+        .route(
+            "/api/transactions/intelligence",
+            get(get_transaction_intelligence),
+        )
         .route("/api/transactions/categories", get(get_categories))
         .route("/api/transactions/patterns", get(get_patterns))
         .route("/api/transactions/anomalies", get(get_anomalies))

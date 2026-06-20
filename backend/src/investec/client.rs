@@ -99,7 +99,10 @@ impl InvestecClient {
         self.token_expires_at =
             Some(Utc::now() + chrono::Duration::seconds(token.expires_in as i64));
         self.access_token = Some(token.access_token);
-        info!("Authenticated with Investec API, token expires in {}s", token.expires_in);
+        info!(
+            "Authenticated with Investec API, token expires in {}s",
+            token.expires_in
+        );
         Ok(())
     }
 

@@ -98,18 +98,14 @@ impl SarsCompliance {
         let total_penalties: f64 = vat_returns.iter().map(|r| r.penalties.amount).sum();
 
         // Check if returns were filed on time (within period + 25 days)
-        let on_time = vat_returns
-            .iter()
-            .filter(|r| r.is_submitted)
-            .all(|r| {
-                r.submission_date
-                    .map(|sd| {
-                        let deadline = r.period_end
-                            + chrono::Duration::days(25);
-                        sd <= deadline
-                    })
-                    .unwrap_or(false)
-            });
+        let on_time = vat_returns.iter().filter(|r| r.is_submitted).all(|r| {
+            r.submission_date
+                .map(|sd| {
+                    let deadline = r.period_end + chrono::Duration::days(25);
+                    sd <= deadline
+                })
+                .unwrap_or(false)
+        });
 
         let filing_ratio = if vat_returns.is_empty() {
             0.0
@@ -143,17 +139,21 @@ impl SarsCompliance {
             .iter()
             .filter(|r| {
                 r.is_submitted
-                    && r.submission_date.map(|sd| {
-                        let deadline = r.period_end + chrono::Duration::days(25);
-                        sd > deadline
-                    }).unwrap_or(false)
+                    && r.submission_date
+                        .map(|sd| {
+                            let deadline = r.period_end + chrono::Duration::days(25);
+                            sd > deadline
+                        })
+                        .unwrap_or(false)
             })
             .map(|r| {
                 format!(
                     "{} (due {}, filed {})",
                     r.period_start.date_naive(),
                     (r.period_end + chrono::Duration::days(25)).date_naive(),
-                    r.submission_date.map(|d| d.date_naive().to_string()).unwrap_or_default()
+                    r.submission_date
+                        .map(|d| d.date_naive().to_string())
+                        .unwrap_or_default()
                 )
             })
             .collect();
@@ -191,7 +191,12 @@ impl SarsCompliance {
 
         let filed_count = tax_records
             .iter()
-            .filter(|r| matches!(r.status, ComplianceStatus::Filed | ComplianceStatus::Approved))
+            .filter(|r| {
+                matches!(
+                    r.status,
+                    ComplianceStatus::Filed | ComplianceStatus::Approved
+                )
+            })
             .count();
         let paid_count = tax_records
             .iter()
@@ -211,7 +216,12 @@ impl SarsCompliance {
         let outstanding: Vec<String> = tax_records
             .iter()
             .filter(|r| r.balance.amount > 0.0)
-            .map(|r| format!("{} ({}) balance: R{:.2}", r.tax_period, r.tax_type, r.balance.amount))
+            .map(|r| {
+                format!(
+                    "{} ({}) balance: R{:.2}",
+                    r.tax_period, r.tax_type, r.balance.amount
+                )
+            })
             .collect();
 
         TaxComplianceResult {
@@ -225,7 +235,9 @@ impl SarsCompliance {
 
     pub fn check_payroll_compliance(tax_records: &[TaxRecord]) -> PayrollComplianceResult {
         let payroll_types = [TaxType::Paye, TaxType::Uif, TaxType::Sdl];
-        let has_payroll_data = tax_records.iter().any(|r| payroll_types.contains(&r.tax_type));
+        let has_payroll_data = tax_records
+            .iter()
+            .any(|r| payroll_types.contains(&r.tax_type));
 
         if !has_payroll_data {
             return PayrollComplianceResult {
@@ -241,17 +253,32 @@ impl SarsCompliance {
         let paye = tax_records
             .iter()
             .find(|r| r.tax_type == TaxType::Paye)
-            .map(|r| matches!(r.status, ComplianceStatus::Filed | ComplianceStatus::Approved) && r.balance.amount <= 0.0)
+            .map(|r| {
+                matches!(
+                    r.status,
+                    ComplianceStatus::Filed | ComplianceStatus::Approved
+                ) && r.balance.amount <= 0.0
+            })
             .unwrap_or(false);
         let uif = tax_records
             .iter()
             .find(|r| r.tax_type == TaxType::Uif)
-            .map(|r| matches!(r.status, ComplianceStatus::Filed | ComplianceStatus::Approved) && r.balance.amount <= 0.0)
+            .map(|r| {
+                matches!(
+                    r.status,
+                    ComplianceStatus::Filed | ComplianceStatus::Approved
+                ) && r.balance.amount <= 0.0
+            })
             .unwrap_or(false);
         let sdl = tax_records
             .iter()
             .find(|r| r.tax_type == TaxType::Sdl)
-            .map(|r| matches!(r.status, ComplianceStatus::Filed | ComplianceStatus::Approved) && r.balance.amount <= 0.0)
+            .map(|r| {
+                matches!(
+                    r.status,
+                    ComplianceStatus::Filed | ComplianceStatus::Approved
+                ) && r.balance.amount <= 0.0
+            })
             .unwrap_or(false);
 
         let score = match (paye, uif, sdl) {
@@ -287,20 +314,24 @@ impl SarsCompliance {
                     remediation: "File outstanding VAT return immediately".into(),
                 });
             }
-        for period in &vat_result.late_returns {
+            for period in &vat_result.late_returns {
                 violations.push(ComplianceViolation {
                     code: "VAT-002".into(),
                     severity: ViolationSeverity::Medium,
                     description: format!("VAT return filed late: {}", period),
                     regulation_ref: "VAT Act 89 of 1991 s28(2)".into(),
-                    remediation: "Ensure future returns are filed within 25 days of period end".into(),
+                    remediation: "Ensure future returns are filed within 25 days of period end"
+                        .into(),
                 });
             }
             if vat_result.penalties.amount > 0.0 {
                 violations.push(ComplianceViolation {
                     code: "VAT-003".into(),
                     severity: ViolationSeverity::High,
-                    description: format!("VAT penalties accrued: R{:.2}", vat_result.penalties.amount),
+                    description: format!(
+                        "VAT penalties accrued: R{:.2}",
+                        vat_result.penalties.amount
+                    ),
                     regulation_ref: "VAT Act 89 of 1991 s39".into(),
                     remediation: "Pay outstanding penalties to avoid further escalation".into(),
                 });
@@ -368,7 +399,9 @@ impl SarsCompliance {
             recs.push(format!("File VAT return for {} to avoid penalties", period));
         }
         for _period in &vat_result.late_returns {
-            recs.push("Set up calendar reminders for VAT filing deadlines (25th after period end)".into());
+            recs.push(
+                "Set up calendar reminders for VAT filing deadlines (25th after period end)".into(),
+            );
             break;
         }
         if !vat_result.vat_paid_on_time {
@@ -455,12 +488,21 @@ mod tests {
             net_vat_due: Money::zar(net_due),
             is_submitted: submitted,
             submission_date: submission,
-            sars_reference: if submitted { Some("SARS-REF".into()) } else { None },
+            sars_reference: if submitted {
+                Some("SARS-REF".into())
+            } else {
+                None
+            },
             penalties: Money::zar(penalties),
         }
     }
 
-    fn make_tax_record(tax_type: TaxType, due: f64, paid: f64, status: ComplianceStatus) -> TaxRecord {
+    fn make_tax_record(
+        tax_type: TaxType,
+        due: f64,
+        paid: f64,
+        status: ComplianceStatus,
+    ) -> TaxRecord {
         TaxRecord {
             id: Uuid::new_v4(),
             business_id: Uuid::nil(),
@@ -513,7 +555,14 @@ mod tests {
         let start = now - chrono::Duration::days(120);
         let end = now - chrono::Duration::days(90);
         let late_submission = Some(now);
-        let returns = vec![make_vat_return(start, end, true, late_submission, 5000.0, 50.0)];
+        let returns = vec![make_vat_return(
+            start,
+            end,
+            true,
+            late_submission,
+            5000.0,
+            50.0,
+        )];
         let result = SarsCompliance::check_vat_compliance(&returns, now);
         assert!(!result.returns_filed_on_time);
         assert_eq!(result.late_returns.len(), 1);
@@ -523,7 +572,12 @@ mod tests {
     #[test]
     fn test_tax_all_filed_and_paid() {
         let records = vec![
-            make_tax_record(TaxType::IncomeTax, 50000.0, 50000.0, ComplianceStatus::Approved),
+            make_tax_record(
+                TaxType::IncomeTax,
+                50000.0,
+                50000.0,
+                ComplianceStatus::Approved,
+            ),
             make_tax_record(TaxType::Vat, 10000.0, 10000.0, ComplianceStatus::Filed),
         ];
         let result = SarsCompliance::check_tax_compliance(&records);
@@ -540,9 +594,12 @@ mod tests {
 
     #[test]
     fn test_tax_outstanding_balance() {
-        let records = vec![
-            make_tax_record(TaxType::IncomeTax, 50000.0, 30000.0, ComplianceStatus::Filed),
-        ];
+        let records = vec![make_tax_record(
+            TaxType::IncomeTax,
+            50000.0,
+            30000.0,
+            ComplianceStatus::Filed,
+        )];
         let result = SarsCompliance::check_tax_compliance(&records);
         assert!(!result.is_compliant);
         assert_eq!(result.outstanding_periods.len(), 1);
@@ -550,9 +607,12 @@ mod tests {
 
     #[test]
     fn test_payroll_no_payroll_data() {
-        let records = vec![
-            make_tax_record(TaxType::IncomeTax, 1000.0, 1000.0, ComplianceStatus::Approved),
-        ];
+        let records = vec![make_tax_record(
+            TaxType::IncomeTax,
+            1000.0,
+            1000.0,
+            ComplianceStatus::Approved,
+        )];
         let result = SarsCompliance::check_payroll_compliance(&records);
         assert!(result.is_compliant);
         assert_eq!(result.score, 0.5);
@@ -572,9 +632,12 @@ mod tests {
 
     #[test]
     fn test_payroll_paye_not_filed() {
-        let records = vec![
-            make_tax_record(TaxType::Paye, 10000.0, 0.0, ComplianceStatus::Pending),
-        ];
+        let records = vec![make_tax_record(
+            TaxType::Paye,
+            10000.0,
+            0.0,
+            ComplianceStatus::Pending,
+        )];
         let result = SarsCompliance::check_payroll_compliance(&records);
         assert!(!result.is_compliant);
     }
@@ -586,12 +649,18 @@ mod tests {
         let end = now - chrono::Duration::days(1);
         let returns = vec![make_vat_return(start, end, true, Some(now), 5000.0, 0.0)];
         let records = vec![
-            make_tax_record(TaxType::IncomeTax, 50000.0, 50000.0, ComplianceStatus::Approved),
+            make_tax_record(
+                TaxType::IncomeTax,
+                50000.0,
+                50000.0,
+                ComplianceStatus::Approved,
+            ),
             make_tax_record(TaxType::Paye, 10000.0, 10000.0, ComplianceStatus::Filed),
             make_tax_record(TaxType::Uif, 500.0, 500.0, ComplianceStatus::Filed),
             make_tax_record(TaxType::Sdl, 300.0, 300.0, ComplianceStatus::Filed),
         ];
-        let report = SarsCompliance::generate_compliance_report(Uuid::nil(), &returns, &records, 0.85);
+        let report =
+            SarsCompliance::generate_compliance_report(Uuid::nil(), &returns, &records, 0.85);
         assert!(report.overall_score > 0.0);
         assert!(report.violations.is_empty());
         assert!(!report.recommendations.is_empty());
@@ -603,13 +672,15 @@ mod tests {
         let now = Utc::now();
         let start = now - chrono::Duration::days(120);
         let end = now - chrono::Duration::days(90);
-        let returns = vec![
-            make_vat_return(start, end, false, None, 5000.0, 200.0),
-        ];
-        let records = vec![
-            make_tax_record(TaxType::IncomeTax, 50000.0, 10000.0, ComplianceStatus::Pending),
-        ];
-        let report = SarsCompliance::generate_compliance_report(Uuid::nil(), &returns, &records, 0.5);
+        let returns = vec![make_vat_return(start, end, false, None, 5000.0, 200.0)];
+        let records = vec![make_tax_record(
+            TaxType::IncomeTax,
+            50000.0,
+            10000.0,
+            ComplianceStatus::Pending,
+        )];
+        let report =
+            SarsCompliance::generate_compliance_report(Uuid::nil(), &returns, &records, 0.5);
         assert!(report.overall_score < 0.5);
         assert!(!report.violations.is_empty());
     }

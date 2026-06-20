@@ -76,7 +76,8 @@ impl CashFlowForecaster {
             .clamp(0.0, 1.0);
 
         let spread = 1.0 + volatility * 2.0;
-        let cfar_95 = Self::cash_flow_at_risk(&recent_txns, 0.95, period_days, config.forecast_days);
+        let cfar_95 =
+            Self::cash_flow_at_risk(&recent_txns, 0.95, period_days, config.forecast_days);
 
         let scenarios = vec![
             CashFlowScenario {

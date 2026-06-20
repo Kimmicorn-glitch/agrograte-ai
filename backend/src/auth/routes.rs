@@ -156,9 +156,7 @@ async fn register(
     if !validate_email(&req.email) {
         return Err((
             StatusCode::UNPROCESSABLE_ENTITY,
-            Json(
-                serde_json::json!({"error": "Invalid email format", "code": "VALIDATION_ERROR"}),
-            ),
+            Json(serde_json::json!({"error": "Invalid email format", "code": "VALIDATION_ERROR"})),
         ));
     }
 

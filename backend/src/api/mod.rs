@@ -20,10 +20,9 @@ use crate::config::Environment;
 use crate::AppState;
 
 use crate::api::routes::{
-    approval::approval_routes, banking::banking_routes,
-    cashflow::cashflow_routes, compliance::compliance_routes, drrt::drrt_routes,
-    financial::financial_routes, health::health_routes, investec::investec_routes,
-    transactions::transaction_routes,
+    approval::approval_routes, banking::banking_routes, cashflow::cashflow_routes,
+    compliance::compliance_routes, drrt::drrt_routes, financial::financial_routes,
+    health::health_routes, investec::investec_routes, transactions::transaction_routes,
 };
 
 pub struct AppRouter {
