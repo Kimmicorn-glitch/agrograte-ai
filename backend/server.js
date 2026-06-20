@@ -390,7 +390,12 @@ app.get('/api/investec/status', (req, res) => {
 
 app.get('/api/investec/auth-url', (req, res) => {
   const state = `state-${Date.now()}`
-  res.json({ url: investec.getAuthUrl(state), state })
+  const url = investec.getAuthUrl(state)
+  const shouldRedirect = req.query.redirect === 'true'
+  if (shouldRedirect) {
+    return res.redirect(url)
+  }
+  res.json({ url, state })
 })
 
 app.get('/api/investec/callback', async (req, res) => {
