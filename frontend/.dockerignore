@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.env
+.env.*
+.env.local
+*.md
+.git
+.gitignore
+.gitattributes
+Dockerfile
+.dockerignore
+coverage/
+e2e/
