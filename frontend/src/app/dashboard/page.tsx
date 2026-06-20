@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -7,6 +7,12 @@ import { staggerContainer, fadeInUp } from '@/lib/motion'
 import { ExecutiveSummaryCard } from '@/components/dashboard/ExecutiveSummaryCard'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { api } from '@/lib/api'
+import Hero from '@/components/ui/Hero'
+import AICommandCenter from '@/components/ui/AICommandCenter'
+import { DashboardCards } from '@/components/ui/DashboardCards'
+import ComplianceTimeline from '@/components/ui/ComplianceTimeline'
+
+const MotionDiv = motion.div
 
 export default function DashboardHome() {
   const [health, setHealth] = useState<any>(null)
@@ -130,28 +136,29 @@ export default function DashboardHome() {
 
   if (loading) {
     return (
-      <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+      <MotionDiv initial="hidden" animate="visible" variants={staggerContainer}>
         <div className="flex items-center justify-center py-24 text-charcoal-400 font-mono text-sm gap-2">
           <div className="w-1.5 h-1.5 bg-accent rounded-full animate-pulse" />
           Loading dashboard...
         </div>
-      </motion.div>
+      </MotionDiv>
     )
   }
 
   if (error) {
     return (
-      <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+      <MotionDiv initial="hidden" animate="visible" variants={staggerContainer}>
         <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-error/10 border border-error/20 text-error text-sm font-mono">
           <AlertTriangle size={14} /> {error}
         </div>
-      </motion.div>
+      </MotionDiv>
     )
   }
 
   return (
-    <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
-      <motion.div variants={fadeInUp} className="flex items-center justify-between mb-8">
+    <MotionDiv initial="hidden" animate="visible" variants={staggerContainer}>
+      <Hero />
+      <MotionDiv variants={fadeInUp} className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-display-sm text-secondary">Executive Dashboard</h1>
           <p className="text-body-md text-charcoal-500 mt-1">
@@ -159,16 +166,16 @@ export default function DashboardHome() {
           </p>
         </div>
         <StatusBadge status={health ? 'success' : 'warning'} label={health ? 'Live Data' : 'Awaiting Data'} dot={false} />
-      </motion.div>
+      </MotionDiv>
 
-      <motion.div variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+      <MotionDiv variants={fadeInUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
         {metrics.map((metric, index) => (
           <ExecutiveSummaryCard key={metric.id} {...metric} index={index} />
         ))}
-      </motion.div>
+      </MotionDiv>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div variants={fadeInUp} className="lg:col-span-2">
+        <MotionDiv variants={fadeInUp} className="lg:col-span-2">
           <div className="card">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -210,31 +217,24 @@ export default function DashboardHome() {
               )}
             </div>
           </div>
-        </motion.div>
+        </MotionDiv>
 
-        <motion.div variants={fadeInUp} className="space-y-4">
+        <MotionDiv variants={fadeInUp} className="space-y-4">
           <div className="card">
             <h2 className="text-heading-md text-secondary mb-4">Top Merchants</h2>
             <div className="space-y-1">
-              {recentActivity.length > 0 ? recentActivity.map((tx: any) => (
-                <div
-                  key={tx.id}
-                  className="flex items-center justify-between py-2.5 border-b border-charcoal-100 last:border-0"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-secondary truncate">{tx.description}</p>
-                    <p className="text-caption text-charcoal-400">{tx.date}</p>
+              {recentActivity.length > 0 ? (
+                recentActivity.map((tx: any) => (
+                  <div key={tx.id} className="flex items-center justify-between py-2.5 border-b border-charcoal-100 last:border-0">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-secondary truncate">{tx.description}</p>
+                      <p className="text-caption text-charcoal-400">{tx.date}</p>
+                    </div>
+                    <span className={`text-sm font-semibold ml-4 shrink-0 ${tx.type === 'inflow' ? 'text-success' : 'text-error'}`}>{tx.amount}</span>
                   </div>
-                  <span
-                    className={`text-sm font-semibold ml-4 shrink-0 ${
-                      tx.type === 'inflow' ? 'text-success' : 'text-error'
-                    }`}
-                  >
-                    {tx.amount}
-                  </span>
-                </div>
-              )) : (
-                <div className="py-6 text-caption text-charcoal-400">No transaction intelligence available</div>
+                ))
+              ) : (
+                <div className="text-caption text-charcoal-400">No recent activity</div>
               )}
             </div>
           </div>
@@ -245,21 +245,38 @@ export default function DashboardHome() {
               <Calendar size={14} className="text-charcoal-400" />
             </div>
             <div className="space-y-2">
-              {upcoming.length > 0 ? upcoming.map((item) => (
-                <div key={item.item} className="flex items-center gap-3 py-1.5">
-                  <StatusBadge status={item.status} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-secondary truncate">{item.item}</p>
+              {upcoming.length > 0 ? (
+                upcoming.map((u, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm">{u.item}</div>
+                      <div className="text-caption text-charcoal-400">{u.date}</div>
+                    </div>
+                    <div className="text-sm font-medium text-warning">{u.status}</div>
                   </div>
-                  <span className="text-caption text-charcoal-400 shrink-0">{item.date}</span>
-                </div>
-              )) : (
-                <div className="py-6 text-caption text-charcoal-400">No upcoming compliance deadlines</div>
+                ))
+              ) : (
+                <div className="text-caption text-charcoal-400">No upcoming items</div>
               )}
             </div>
           </div>
-        </motion.div>
+
+          <div className="card">
+            <h2 className="text-heading-md text-secondary mb-4">AI Command Center</h2>
+            <AICommandCenter />
+          </div>
+
+          <div className="card">
+            <h2 className="text-heading-md text-secondary mb-4">Quick Metrics</h2>
+            <DashboardCards stats={metrics.map(m => ({ label: m.label, value: m.value }))} />
+          </div>
+
+          <div className="card">
+            <h2 className="text-heading-md text-secondary mb-4">Compliance Timeline</h2>
+            <ComplianceTimeline />
+          </div>
+        </MotionDiv>
       </div>
-    </motion.div>
+    </MotionDiv>
   )
 }
