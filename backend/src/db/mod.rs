@@ -1,8 +1,5 @@
-use sqlx::postgres::PgConnectOptions;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::ConnectOptions;
 use sqlx::PgPool;
-use std::str::FromStr;
 use std::time::Duration;
 use tracing::{info, warn};
 
@@ -15,17 +12,14 @@ pub fn connect(database_url: &str) -> PgPool {
         "initializing PostgreSQL pool"
     );
 
-    let options = PgConnectOptions::from_str(database_url)
-        .expect("Invalid database URL")
-        .connect_timeout(Duration::from_secs(10));
-
     PgPoolOptions::new()
         .max_connections(5)
         .min_connections(0)
         .acquire_timeout(Duration::from_secs(15))
         .idle_timeout(Duration::from_secs(300))
         .max_lifetime(Duration::from_secs(1800))
-        .connect_lazy_with(options)
+        .connect_lazy(database_url)
+        .expect("Invalid database URL")
 }
 
 pub async fn warmup_database(pool: PgPool) {
