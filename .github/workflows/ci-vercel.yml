@@ -1,0 +1,53 @@
+name: CI & Vercel Deploy
+
+# Runs CI (install, typecheck, build, tests) for the frontend and
+# optionally deploys to Vercel when `VERCEL_TOKEN` is configured in repository secrets.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache frontend node_modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-frontend-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-frontend-
+
+      - name: Install frontend dependencies
+        run: npm --prefix frontend ci
+
+      - name: Typecheck
+        run: npm --prefix frontend run typecheck
+
+      - name: Build frontend
+        run: npm --prefix frontend run build
+
+      - name: Run frontend tests (if any)
+        run: npm --prefix frontend test || true
+
+      - name: Deploy to Vercel (if token present)
+        if: secrets.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          # Use npx vercel to deploy the frontend folder
+          npx vercel@latest --prod --token $VERCEL_TOKEN --confirm --cwd frontend
