@@ -91,6 +91,7 @@ impl ConvergenceEngine {
     }
 
     /// Detect if the tensor is in a local minimum (stuck)
+    #[allow(dead_code)]
     pub fn detect_local_minimum(tensor: &RelationalTensor, window: usize) -> bool {
         let history = &tensor.memory_state.coherence_history;
         if history.len() < window * 2 {

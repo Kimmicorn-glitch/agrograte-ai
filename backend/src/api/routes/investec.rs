@@ -34,6 +34,7 @@ struct ConnectionStatusResponse {
 }
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 struct CallbackQuery {
     code: String,
     state: String,
@@ -95,10 +96,12 @@ async fn get_banking_summary(
         } else {
             0.0
         };
-        let mut metrics = FinancialMetrics::default();
-        metrics.total_balance = Some(balance);
-        metrics.free_cash = Some(free_cash);
-        metrics.liquidity_ratio = Some(liquidity_ratio);
+        let metrics = FinancialMetrics {
+            total_balance: Some(balance),
+            free_cash: Some(free_cash),
+            liquidity_ratio: Some(liquidity_ratio),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
 

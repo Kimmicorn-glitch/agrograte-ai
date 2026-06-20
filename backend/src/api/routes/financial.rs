@@ -85,13 +85,15 @@ async fn get_financial_health(
         } else {
             0.0
         };
-        let mut metrics = FinancialMetrics::default();
-        metrics.revenue = Some(base_revenue);
-        metrics.expenses = Some(base_expenses);
-        metrics.profit = Some(base_profit);
-        metrics.total_balance = Some(total_balance);
-        metrics.free_cash = Some(free_cash);
-        metrics.liquidity_ratio = Some(liquidity_ratio);
+        let metrics = FinancialMetrics {
+            revenue: Some(base_revenue),
+            expenses: Some(base_expenses),
+            profit: Some(base_profit),
+            total_balance: Some(total_balance),
+            free_cash: Some(free_cash),
+            liquidity_ratio: Some(liquidity_ratio),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
     let coherence = drrt.global_coherence;
@@ -188,13 +190,15 @@ async fn get_financial_health_detail(
         } else {
             0.0
         };
-        let mut metrics = FinancialMetrics::default();
-        metrics.revenue = Some(base_revenue);
-        metrics.expenses = Some(base_expenses);
-        metrics.profit = Some(base_profit);
-        metrics.total_balance = Some(total_balance);
-        metrics.free_cash = Some(free_cash);
-        metrics.liquidity_ratio = Some(liquidity_ratio);
+        let metrics = FinancialMetrics {
+            revenue: Some(base_revenue),
+            expenses: Some(base_expenses),
+            profit: Some(base_profit),
+            total_balance: Some(total_balance),
+            free_cash: Some(free_cash),
+            liquidity_ratio: Some(liquidity_ratio),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
     let coherence = drrt.global_coherence;

@@ -45,6 +45,7 @@ pub async fn create_rule(
     Ok(())
 }
 
+#[allow(dead_code)]
 pub async fn get_rule(pool: &PgPool, id: Uuid) -> Result<Option<BankingRule>, sqlx::Error> {
     let row = sqlx::query_as::<_, RuleRow>(
         "SELECT id, name, description, account_id, rule_type, condition, action, is_active, approval_required, drrt_coherence, created_at FROM programmable_rules WHERE id = $1",

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -64,7 +66,7 @@ pub enum BankProvider {
     StandardBank,
     Nedbank,
     Absa,
-    FNB,
+    Fnb,
     Other(String),
 }
 

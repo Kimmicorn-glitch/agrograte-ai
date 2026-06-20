@@ -13,6 +13,7 @@ use serde_json::json;
 use uuid::Uuid;
 
 #[derive(Serialize)]
+#[allow(dead_code)]
 struct DrrtStateResponse {
     state: DrrtStateSummary,
 }

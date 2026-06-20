@@ -398,11 +398,10 @@ impl SarsCompliance {
         for period in &vat_result.outstanding_returns {
             recs.push(format!("File VAT return for {} to avoid penalties", period));
         }
-        for _period in &vat_result.late_returns {
+        if !vat_result.late_returns.is_empty() {
             recs.push(
                 "Set up calendar reminders for VAT filing deadlines (25th after period end)".into(),
             );
-            break;
         }
         if !vat_result.vat_paid_on_time {
             recs.push("Automate VAT payments to ensure timely settlement".into());

@@ -51,6 +51,7 @@ pub struct RefreshRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct RefreshToken {
     pub token: String,
     pub user_id: Uuid,

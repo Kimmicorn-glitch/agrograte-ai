@@ -80,19 +80,21 @@ async fn get_cashflow_forecast(
         } else {
             posted_count as f64 / transactions.len() as f64
         };
-        let mut metrics = FinancialMetrics::default();
-        metrics.total_balance = Some(current_balance);
-        metrics.transaction_volume_90d = Some(total_volume);
-        metrics.transaction_count_90d = Some(transactions.len() as f64);
-        metrics.pending_transaction_ratio = Some(pending_ratio);
-        metrics.successful_transaction_ratio = Some(success_ratio);
+        let metrics = FinancialMetrics {
+            total_balance: Some(current_balance),
+            transaction_volume_90d: Some(total_volume),
+            transaction_count_90d: Some(transactions.len() as f64),
+            pending_transaction_ratio: Some(pending_ratio),
+            successful_transaction_ratio: Some(success_ratio),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
     let forecast = CashFlowForecaster::forecast(
         business_id,
         &transactions,
         Money::zar(current_balance),
-        &*drrt,
+        &drrt,
         &config,
     );
 
@@ -191,27 +193,29 @@ async fn get_cashflow_detail(
             .iter()
             .filter(|t| matches!(t.status, TransactionStatus::Posted))
             .count();
-        let mut metrics = FinancialMetrics::default();
-        metrics.total_balance = Some(balance_row.0);
-        metrics.transaction_volume_90d = Some(total_volume);
-        metrics.transaction_count_90d = Some(transactions.len() as f64);
-        metrics.pending_transaction_ratio = Some(if transactions.is_empty() {
-            0.0
-        } else {
-            pending_count as f64 / transactions.len() as f64
-        });
-        metrics.successful_transaction_ratio = Some(if transactions.is_empty() {
-            0.0
-        } else {
-            posted_count as f64 / transactions.len() as f64
-        });
+        let metrics = FinancialMetrics {
+            total_balance: Some(balance_row.0),
+            transaction_volume_90d: Some(total_volume),
+            transaction_count_90d: Some(transactions.len() as f64),
+            pending_transaction_ratio: Some(if transactions.is_empty() {
+                0.0
+            } else {
+                pending_count as f64 / transactions.len() as f64
+            }),
+            successful_transaction_ratio: Some(if transactions.is_empty() {
+                0.0
+            } else {
+                posted_count as f64 / transactions.len() as f64
+            }),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
     let forecast = CashFlowForecaster::forecast(
         business_id,
         &transactions,
         Money::zar(balance_row.0),
-        &*drrt,
+        &drrt,
         &config,
     );
 

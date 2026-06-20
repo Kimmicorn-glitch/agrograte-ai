@@ -12,6 +12,7 @@ use super::super::AppState;
 #[derive(Debug, Clone)]
 pub struct AuthenticatedUser {
     pub user_id: Uuid,
+    #[allow(dead_code)]
     pub email: String,
     pub role: super::super::domain::value_objects::Role,
     pub business_id: Option<Uuid>,
@@ -104,6 +105,7 @@ pub async fn require_rules_management(
     check_permission(request, next, &["manage:rules"]).await
 }
 
+#[allow(dead_code)]
 pub async fn require_admin_access(
     request: Request,
     next: Next,

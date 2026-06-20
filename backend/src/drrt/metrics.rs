@@ -66,17 +66,17 @@ impl DrrtMetrics {
                 let a_key = (a.source_id, a.target_id);
                 let b_key = (b.source_id, b.target_id);
 
-                if a_key == b_key || a_key == (b.target_id, b.source_id) {
-                    if !seen_pairs.contains(&a_key) {
-                        seen_pairs.insert(a_key);
-                        pair_count += 1.0;
+                if (a_key == b_key || a_key == (b.target_id, b.source_id))
+                    && !seen_pairs.contains(&a_key)
+                {
+                    seen_pairs.insert(a_key);
+                    pair_count += 1.0;
 
-                        let sign_a = a.sign.to_f64();
-                        let sign_b = b.sign.to_f64();
+                    let sign_a = a.sign.to_f64();
+                    let sign_b = b.sign.to_f64();
 
-                        if sign_a * sign_b < 0.0 {
-                            contradiction_count += 1.0;
-                        }
+                    if sign_a * sign_b < 0.0 {
+                        contradiction_count += 1.0;
                     }
                 }
             }

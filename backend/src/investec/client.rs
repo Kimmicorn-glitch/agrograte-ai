@@ -10,6 +10,7 @@ use super::types::*;
 /// Connects to Investec's open banking API for real-time account access
 /// and programmable card/account actions
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct InvestecClient {
     http: HttpClient,
     client_id: String,
@@ -22,6 +23,7 @@ pub struct InvestecClient {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct TokenResponse {
     access_token: String,
     token_type: String,
@@ -118,6 +120,7 @@ impl InvestecClient {
         }
     }
 
+    #[allow(dead_code)]
     async fn retry_request<T, F, Fut>(&self, mut operation: F) -> Result<T, InvestecError>
     where
         F: FnMut() -> Fut,

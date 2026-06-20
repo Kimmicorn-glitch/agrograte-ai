@@ -124,10 +124,12 @@ async fn get_compliance_summary(
         } else {
             0.0
         };
-        let mut metrics = FinancialMetrics::default();
-        metrics.vat_compliance_ratio = Some(vat_ratio);
-        metrics.tax_compliance_ratio = Some(tax_ratio);
-        metrics.compliance_score = Some((vat_ratio + tax_ratio) / 2.0);
+        let metrics = FinancialMetrics {
+            vat_compliance_ratio: Some(vat_ratio),
+            tax_compliance_ratio: Some(tax_ratio),
+            compliance_score: Some((vat_ratio + tax_ratio) / 2.0),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
     let coherence = drrt.global_coherence;
@@ -195,10 +197,12 @@ async fn get_compliance_report(
         } else {
             0.0
         };
-        let mut metrics = FinancialMetrics::default();
-        metrics.vat_compliance_ratio = Some(vat_ratio);
-        metrics.tax_compliance_ratio = Some(tax_ratio);
-        metrics.compliance_score = Some((vat_ratio + tax_ratio) / 2.0);
+        let metrics = FinancialMetrics {
+            vat_compliance_ratio: Some(vat_ratio),
+            tax_compliance_ratio: Some(tax_ratio),
+            compliance_score: Some((vat_ratio + tax_ratio) / 2.0),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
     let coherence = drrt.global_coherence;
@@ -359,11 +363,13 @@ async fn get_tax_reserve(
     let mut drrt = state.drrt.write().await;
     {
         let paid_invoice_ratio = if total_vat > 0.0 { 1.0 } else { 0.0 };
-        let mut metrics = FinancialMetrics::default();
-        metrics.paid_invoice_ratio = Some(paid_invoice_ratio);
+        let metrics = FinancialMetrics {
+            paid_invoice_ratio: Some(paid_invoice_ratio),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
-    let calc = TaxReserveEngine::calculate_reserves(business_id, &[], &*drrt, reserved);
+    let calc = TaxReserveEngine::calculate_reserves(business_id, &[], &drrt, reserved);
 
     Ok(Json(TaxReserveResponse {
         estimated_vat_liability: if total_vat > 0.0 {

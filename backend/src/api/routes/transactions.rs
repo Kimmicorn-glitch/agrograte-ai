@@ -76,9 +76,11 @@ async fn get_transaction_intelligence(
         .collect();
 
     {
-        let mut metrics = FinancialMetrics::default();
-        metrics.transaction_volume_90d = Some(grand_total);
-        metrics.transaction_count_90d = Some(total_count as f64);
+        let metrics = FinancialMetrics {
+            transaction_volume_90d: Some(grand_total),
+            transaction_count_90d: Some(total_count as f64),
+            ..Default::default()
+        };
         drrt.update_from_financial_data(&metrics);
     }
 

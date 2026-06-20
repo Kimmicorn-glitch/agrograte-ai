@@ -74,6 +74,7 @@ impl RateLimiter {
     }
 }
 
+#[allow(dead_code)]
 pub async fn request_logger(request: Request, next: Next) -> Response {
     let method = request.method().to_string();
     let uri = request.uri().to_string();
