@@ -2,52 +2,89 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, ChevronDown } from 'lucide-react'
-import { MISSION } from '@/lib/constants'
-
-const stagger = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }
-const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }
+import { ArrowRight, PlayCircle } from 'lucide-react'
+import { staggerContainer, fadeInUp } from '@/lib/motion'
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-scarlet-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/5 rounded-full blur-[120px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-scarlet-600/5 via-transparent to-white/5 blur-[100px]" />
-      </div>
-      <div className="page-container relative z-10">
-        <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-4xl mx-auto text-center">
-          <motion.div variants={fadeUp} className="mb-6">
-            <span className="pill pill-scarlet text-xs">
-              <span className="w-1.5 h-1.5 bg-scarlet-600 rounded-full mr-2 inline-block animate-breathe" />
-              Now in Private Beta
+    <section className="relative min-h-[90vh] flex items-center pt-24 md:pt-28 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-hero pointer-events-none" />
+      <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-accent/[0.02] rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-0 w-[400px] h-[400px] bg-accent/[0.015] rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="page-container relative z-10 w-full">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+          className="max-w-4xl mx-auto text-center"
+        >
+          <motion.div variants={fadeInUp} className="mb-8">
+            <span className="pill pill-accent text-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse-soft inline-block" />
+              Built for Investec Programmable Banking
             </span>
           </motion.div>
-          <motion.h1 variants={fadeUp} className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6">
-            <span className="text-white">From </span>
-            <span className="gradient-text">Transactions</span>
-            <br />
-            <span className="text-white">to </span>
-            <span className="gradient-text">Intelligence</span>
+
+          <motion.h1
+            variants={fadeInUp}
+            className="text-display-lg md:text-display-xl text-secondary font-bold tracking-tight mb-6 text-balance"
+          >
+            Turn Banking Data Into{' '}
+            <span className="gradient-text">SARS-Ready</span>{' '}
+            Intelligence
           </motion.h1>
-          <motion.p variants={fadeUp} className="text-lg md:text-xl text-white/50 font-mono max-w-2xl mx-auto mb-12 leading-relaxed">{MISSION}</motion.p>
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/contact" className="btn-primary text-base px-8 py-3 flex items-center gap-2">
-              Get Early Access <ArrowRight size={16} />
+
+          <motion.p
+            variants={fadeInUp}
+            className="text-body-lg md:text-heading-sm text-charcoal-500 max-w-2xl mx-auto mb-10 leading-relaxed text-pretty"
+          >
+            Automated tax insights, financial reporting, compliance workflows, and AI-powered
+            business intelligence powered by Investec Programmable Banking.
+          </motion.p>
+
+          <motion.div
+            variants={fadeInUp}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <Link
+              href="/contact"
+              className="btn-primary btn-lg"
+            >
+              Start Free Trial <ArrowRight size={18} />
             </Link>
-            <Link href="/how-it-works" className="btn-ghost text-base px-8 py-3">See How It Works</Link>
+            <Link
+              href="/demo"
+              className="btn-secondary btn-lg"
+            >
+              <PlayCircle size={18} />
+              Book Demo
+            </Link>
           </motion.div>
-          <motion.div variants={fadeUp} className="mt-16 flex items-center justify-center gap-8 text-xs text-white/30 font-mono">
-            <span>Powered by DRRT</span>
-            <span className="w-1 h-1 bg-white/20 rounded-full" />
-            <span>Investec Integrated</span>
-            <span className="w-1 h-1 bg-white/20 rounded-full" />
-            <span>SARS Compliant</span>
+
+          <motion.div
+            variants={fadeInUp}
+            className="mt-16 flex flex-wrap items-center justify-center gap-6 md:gap-10 text-sm text-charcoal-400"
+          >
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              SARS Compliant
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-info" />
+              Investec Integrated
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              AI-Powered
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              POPIA Compliant
+            </span>
           </motion.div>
         </motion.div>
       </div>
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"><ChevronDown size={20} className="text-white/30" /></div>
     </section>
   )
 }

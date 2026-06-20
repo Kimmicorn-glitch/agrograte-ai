@@ -1,198 +1,110 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { GlassCard } from '@/components/ui/GlassCard'
-import { MetricTile } from '@/components/ui/MetricTile'
-import { Shield, AlertTriangle, CheckCircle, FileText, Clock, ArrowRight, TrendingUp, PiggyBank } from 'lucide-react'
-import Link from 'next/link'
-import { api } from '@/lib/api'
+import { motion } from 'framer-motion'
+import { Calendar, ArrowRight, CheckCircle2, Brain } from 'lucide-react'
+import { staggerContainer, fadeInUp } from '@/lib/motion'
+import { COMPLIANCE_ITEMS } from '@/lib/constants'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 
-interface ComplianceReport {
-  overall_score: number
-  vat_score: number
-  vat_compliant: boolean
-  tax_score: number
-  tax_compliant: boolean
-  violations: Array<{
-    code: string
-    severity: string
-    description: string
-    regulation_ref: string
-    remediation: string
-  }>
-  recommendations: string[]
-  drrt_coherence: number
+const s: Record<string, { label: string; status: 'success' | 'active' | 'neutral' | 'warning' }> = {
+  'ready': { label: 'Ready to File', status: 'success' },
+  'in-progress': { label: 'In Progress', status: 'active' },
+  'pending': { label: 'Pending', status: 'neutral' },
+  'attention': { label: 'Needs Attention', status: 'warning' },
 }
 
-interface TaxReserve {
-  estimated_vat_liability: number
-  estimated_income_tax: number
-  total_reserve_required: number
-  current_reserve_balance: number
-  reserve_gap: number
-  drrt_confidence: number
-  recommended_monthly_allocation: number
-}
+const deadlines = [
+  { date: '07 Jul 2025', item: 'PAYE/EMP201 Monthly Submission', status: 'success' as const },
+  { date: '25 Jul 2025', item: 'VAT201 Bi-monthly Return', status: 'warning' as const },
+  { date: '31 Aug 2025', item: 'Provisional Tax (1st Half)', status: 'neutral' as const },
+  { date: '15 Sep 2025', item: 'CIPC Annual Return', status: 'neutral' as const },
+  { date: '31 Jan 2026', item: 'Income Tax Annual Return', status: 'neutral' as const },
+]
 
-export default function CompliancePage() {
-  const [report, setReport] = useState<ComplianceReport | null>(null)
-  const [taxReserve, setTaxReserve] = useState<TaxReserve | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [reserveError, setReserveError] = useState<string | null>(null)
-
-  useEffect(() => {
-    setLoading(true)
-    Promise.all([
-      api.getComplianceReport().then(setReport).catch(e => setError(e.message)),
-      api.getComplianceTaxReserve().then(setTaxReserve).catch(e => setReserveError(e.message)),
-    ]).finally(() => setLoading(false))
-  }, [])
-
-  const scoreColor = (s: number) => s > 0.8 ? 'success' : s > 0.5 ? 'warning' : 'error'
-  const formatRand = (v: number) => `R ${v.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-xl font-bold text-white">SARS Compliance</h1>
-          <p className="text-[0.65rem] text-white/40 font-mono mt-0.5">VAT Act 89 of 1991 · Income Tax Act 58 of 1962</p>
-        </div>
-        <div className="flex items-center justify-center py-16 text-white/40 font-mono text-xs gap-2">
-          <div className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-          Loading compliance data...
-        </div>
-      </div>
-    )
-  }
-
+export default function ComplianceWorkspace() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+      <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-8">
+        <div className="w-8 h-8 rounded-lg bg-accent-subtle flex items-center justify-center">
+          <Calendar size={16} className="text-accent" />
+        </div>
         <div>
-          <h1 className="text-xl font-bold text-white">SARS Compliance</h1>
-          <p className="text-[0.65rem] text-white/40 font-mono mt-0.5">VAT Act 89 of 1991 · Income Tax Act 58 of 1962</p>
+          <h1 className="text-display-sm text-secondary">Compliance Workspace</h1>
+          <p className="text-body-md text-charcoal-500">Manage your SARS, CIPC, and regulatory obligations</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/dashboard/compliance/vat" className="btn-ghost text-xs flex items-center gap-1">
-            VAT Returns <ArrowRight size={10} />
-          </Link>
-          <Link href="/dashboard/compliance/tax" className="btn-ghost text-xs flex items-center gap-1">
-            Tax Records <ArrowRight size={10} />
-          </Link>
-        </div>
-      </div>
-
-      {error && (
-        <div className="text-xs text-red-400/80 font-mono bg-red-500/5 border border-red-500/10 rounded-lg px-4 py-3 flex items-center gap-2">
-          <AlertTriangle size={12} /> Failed to load compliance report: {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <GlassCard>
-          <div className="flex flex-col items-center text-center py-2">
-            <div className="text-3xl font-bold font-mono text-white">
-              {report ? Math.round((report.overall_score ?? 0) * 100) : 0}
-            </div>
-            <div className="text-[0.55rem] text-white/30 font-mono mt-1 uppercase tracking-wider">Overall Score</div>
-            <div className="w-full mt-3 progress-bar">
-              <div className="progress-bar-fill" style={{ width: `${(report?.overall_score ?? 0) * 100}%` }} />
-            </div>
-          </div>
-        </GlassCard>
-        <GlassCard>
-          <MetricTile label="VAT Compliance" value={report?.vat_compliant ? 'Compliant' : 'Attention'} status={report?.vat_compliant ? 'success' : 'error'} />
-          <MetricTile label="VAT Score" value={`${((report?.vat_score ?? 0) * 100).toFixed(0)}%`} status={scoreColor(report?.vat_score ?? 0)} />
-        </GlassCard>
-        <GlassCard>
-          <MetricTile label="Tax Compliance" value={report?.tax_compliant ? 'Compliant' : 'Attention'} status={report?.tax_compliant ? 'success' : 'error'} />
-          <MetricTile label="Tax Score" value={`${((report?.tax_score ?? 0) * 100).toFixed(0)}%`} status={scoreColor(report?.tax_score ?? 0)} />
-        </GlassCard>
-        <GlassCard>
-          <MetricTile label="Violations" value={report?.violations.length ?? 0} status={(report?.violations.length ?? 0) > 0 ? 'error' : 'success'} />
-          <MetricTile label="Recommendations" value={report?.recommendations.length ?? 0} status={(report?.recommendations.length ?? 0) > 0 ? 'warning' : 'success'} />
-          <MetricTile label="DRRT Coherence" value={`${((report?.drrt_coherence ?? 0) * 100).toFixed(1)}%`} status={scoreColor(report?.drrt_coherence ?? 0)} />
-        </GlassCard>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <GlassCard className="lg:col-span-2">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle size={14} className={report?.violations.length && report.violations.length > 0 ? 'text-scarlet-400' : 'text-success'} />
-            <h2 className="section-title mb-0">Violations & Recommendations</h2>
+        <motion.div variants={fadeInUp} className="lg:col-span-2">
+          <div className="card">
+            <h2 className="text-heading-md text-secondary mb-6">Compliance Timeline</h2>
+            <div className="relative">
+              <div className="absolute left-4 top-2 bottom-2 w-0.5 bg-charcoal-200" />
+              <div className="space-y-6">
+                {COMPLIANCE_ITEMS.map((item) => {
+                  const c = s[item.status]
+                  return (
+                    <div key={item.id} className="relative pl-10">
+                      <div className={`absolute left-2.5 w-3.5 h-3.5 rounded-full border-2 bg-white -translate-x-1/2 ${
+                        item.status === 'ready' ? 'border-success' : item.status === 'in-progress' ? 'border-accent' : item.status === 'attention' ? 'border-warning' : 'border-charcoal-300'
+                      }`}>
+                        {item.status === 'ready' && <CheckCircle2 size={14} className="text-success absolute -top-0.5 -left-0.5" />}
+                      </div>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-heading-sm text-secondary">{item.title}</h3>
+                            {c && <StatusBadge status={c.status} label={c.label} dot={false} />}
+                          </div>
+                          <p className="text-body-sm text-charcoal-500 mb-2">{item.description}</p>
+                          <div className="flex items-center gap-3 text-sm">
+                            <span className="flex items-center gap-1.5 text-charcoal-400"><Calendar size={12} />{item.deadline}</span>
+                            <span className="text-charcoal-300">|</span>
+                            <span className="text-charcoal-400">{item.progress}% complete</span>
+                          </div>
+                        </div>
+                        <button className="btn-ghost shrink-0 ml-4"><ArrowRight size={14} /></button>
+                      </div>
+                      <div className="progress-bar mt-3">
+                        <div className={`progress-bar-fill ${item.status === 'ready' ? 'progress-bar-fill-success' : item.status === 'attention' ? 'progress-bar-fill-warning' : ''}`} style={{ width: `${item.progress}%` }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </div>
-          {(!report || report.violations.length === 0) && (!report || report.recommendations.length === 0) ? (
-            <div className="flex flex-col items-center gap-2 py-8 text-xs text-success">
-              <CheckCircle size={20} />
-              <span>All compliant — no violations or recommendations</span>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {report?.violations.map((v, i) => (
-                <div key={`v-${i}`} className="bg-white/5 rounded-lg px-3 py-2.5 space-y-1.5 border-l-2 border-scarlet-500/30">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-white/80">{v.code}</span>
-                    <span className={`text-[0.55rem] uppercase tracking-wider ${v.severity === 'Critical' ? 'text-error' : v.severity === 'High' ? 'text-warning' : 'text-white/40'}`}>{v.severity}</span>
-                  </div>
-                  <p className="text-[0.6rem] text-white/60">{v.description}</p>
-                  <div className="text-[0.55rem] text-white/30 font-mono">{v.regulation_ref}</div>
-                  <div className="text-[0.55rem] text-white/40 flex items-start gap-1">
-                    <span className="text-scarlet-400 mt-0.5">&rarr;</span>
-                    {v.remediation}
-                  </div>
-                </div>
-              ))}
-              {report?.recommendations.filter(r => !report?.violations.some(v => v.remediation === r)).map((r, i) => (
-                <div key={`r-${i}`} className="bg-white/5 rounded-lg px-3 py-2.5 flex items-start gap-2 border-l-2 border-scarlet-500/20">
-                  <span className="text-[0.55rem] text-scarlet-400 mt-0.5">&rarr;</span>
-                  <span className="text-[0.6rem] text-white/60">{r}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="mt-4 pt-4 border-t border-glass-border">
-            <div className="flex items-center gap-2 text-[0.6rem] text-white/30 font-mono">
-              <Clock size={10} />
-              Last checked: {new Date().toLocaleTimeString('en-ZA', { timeZone: 'Africa/Johannesburg' })}
-            </div>
-          </div>
-        </GlassCard>
+        </motion.div>
 
-        <GlassCard>
-          <div className="flex items-center gap-2 mb-3">
-            <PiggyBank size={14} className="text-scarlet-400" />
-            <h2 className="section-title mb-0">Tax Reserve</h2>
-          </div>
-          {reserveError ? (
-            <div className="text-xs text-red-400/80 font-mono py-4 text-center">Unable to load reserve data</div>
-          ) : !taxReserve ? (
-            <div className="flex items-center gap-2 py-6 text-xs text-white/40 font-mono">
-              <span className="w-1.5 h-1.5 bg-white/30 rounded-full animate-pulse" />
-              Loading reserve...
-            </div>
-          ) : (
+        <motion.div variants={fadeInUp} className="space-y-6">
+          <div className="card">
+            <h2 className="text-heading-md text-secondary mb-4">Upcoming Deadlines</h2>
             <div className="space-y-3">
+              {deadlines.map((d) => (
+                <div key={d.date + d.item} className="flex items-start gap-3 py-2 border-b border-charcoal-100 last:border-0">
+                  <StatusBadge status={d.status} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-secondary">{d.item}</p>
+                    <p className="text-caption text-charcoal-400">{d.date}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card bg-accent-subtle border-accent/10">
+            <div className="flex items-start gap-3">
+              <Brain size={16} className="text-accent shrink-0 mt-0.5" />
               <div>
-                <div className="metric-label">Reserve Required</div>
-                <div className="font-mono text-lg font-bold text-white">{formatRand(taxReserve.total_reserve_required)}</div>
-              </div>
-              <MetricTile label="Current Reserve" value={formatRand(taxReserve.current_reserve_balance)} status={taxReserve.reserve_gap <= 0 ? 'success' : 'warning'} />
-              <MetricTile label="Reserve Gap" value={formatRand(taxReserve.reserve_gap)} status={taxReserve.reserve_gap > 0 ? 'error' : 'success'} />
-              <div className="pt-3 border-t border-glass-border">
-                <MetricTile label="Est. VAT Liability" value={formatRand(taxReserve.estimated_vat_liability)} />
-                <MetricTile label="Est. Income Tax" value={formatRand(taxReserve.estimated_income_tax)} />
-                <MetricTile label="Monthly Allocation" value={formatRand(taxReserve.recommended_monthly_allocation)} />
-              </div>
-              <div className="flex items-center gap-2 text-[0.55rem] text-white/30 font-mono pt-2">
-                <TrendingUp size={10} />
-                DRRT Confidence: {((taxReserve.drrt_confidence ?? 1) * 100).toFixed(0)}%
+                <h3 className="text-sm font-semibold text-secondary mb-1">AI Compliance Review</h3>
+                <p className="text-sm text-charcoal-600 leading-relaxed">
+                  Your compliance position is strong. All SARS filings are up to date. I recommend preparing your VAT201 filing this week to stay ahead of the deadline.
+                </p>
               </div>
             </div>
-          )}
-        </GlassCard>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
