@@ -58,11 +58,11 @@
     }
   },
   "drrt_state": {
-    "coherence": 0.714,
-    "contradiction": 0.086,
+    "coherence": 0.701,
+    "contradiction": 0.09,
     "frustration_index": 0.2,
-    "global_coherence": 0.714,
-    "stability": 0.914,
+    "global_coherence": 0.701,
+    "stability": 0.91,
     "entropy": 0.3,
     "convergence_iterations": 42,
     "trend": "improving",
@@ -77,25 +77,25 @@
         "id": "dim-2",
         "name": "Revenue",
         "weight": 0.2,
-        "activation": 1
+        "activation": 0.876
       },
       {
         "id": "dim-3",
         "name": "Expenses",
         "weight": 0.15,
-        "activation": 0.756
+        "activation": 0.688
       },
       {
         "id": "dim-4",
         "name": "Compliance",
         "weight": 0.2,
-        "activation": 0.63
+        "activation": 0.69
       },
       {
         "id": "dim-5",
         "name": "Risk",
         "weight": 0.1,
-        "activation": 0.286
+        "activation": 0.299
       },
       {
         "id": "dim-6",
@@ -107,16 +107,16 @@
     "relationships": [],
     "memory": [],
     "financial_metrics": {
-      "total_balance": 3772430,
-      "free_cash": 1131729,
+      "total_balance": 3590930,
+      "free_cash": 1077279,
       "liquidity_ratio": 1,
-      "revenue": 3772430,
-      "expenses": 1842027,
-      "profit": 1930403,
+      "revenue": 3590930,
+      "expenses": 2241237,
+      "profit": 1349693,
       "vat_compliance_ratio": 0.5,
-      "tax_compliance_ratio": 0.5,
-      "compliance_score": 0.63,
-      "transaction_volume_90d": 3947892.3000000003,
+      "tax_compliance_ratio": 0.6666666666666666,
+      "compliance_score": 0.69,
+      "transaction_volume_90d": 4197190.5,
       "transaction_count_90d": 90,
       "pending_transaction_ratio": 0.1,
       "successful_transaction_ratio": 0.9,
