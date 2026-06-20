@@ -33,7 +33,17 @@ const typeConfig: Record<string, { icon: React.ReactNode; bg: string; text: stri
 }
 
 export function AIInsightsPanel() {
-  const { metrics, insights } = useOrbMetrics()
+  const { metrics, insights, loading } = useOrbMetrics()
+
+  if (loading) {
+    return (
+      <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="space-y-3">
+        <div className="card">
+          <div className="text-caption text-charcoal-400">Loading live intelligence...</div>
+        </div>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.div
@@ -74,15 +84,15 @@ export function AIInsightsPanel() {
         <div className="flex items-center justify-between text-sm">
           <span className="text-charcoal-500">Composite Health</span>
           <span className="text-xl font-bold text-secondary">
-            {Math.round(
-              (metrics.cashflowHealth +
-                metrics.complianceScore +
-                (1 - metrics.taxLiability) +
-                metrics.forecastConfidence +
-                (1 - metrics.riskLevel)) /
-                5 *
-                100
-            )}
+          {Math.round(
+            (metrics.cashflowHealth +
+              metrics.complianceScore +
+              (1 - metrics.taxLiability) +
+              metrics.forecastConfidence +
+              (1 - metrics.riskLevel)) /
+              5 *
+              100
+          )}
             <span className="text-sm font-medium text-charcoal-400">/100</span>
           </span>
         </div>
