@@ -98,3 +98,8 @@ tsconfig.tsbuildinfo
 *.key
 *.cert
 secrets/
+
+# ============================
+# OpenCode CLI
+# ============================
+cli/
