@@ -98,13 +98,15 @@ pub async fn seed_default_user(pool: &PgPool) -> Result<(), sqlx::Error> {
         .await?;
 
     if exists {
-        info!(event = "seed_skipped", "Default user already exists; skipping seed");
+        info!(
+            event = "seed_skipped",
+            "Default user already exists; skipping seed"
+        );
         return Ok(());
     }
 
     let email = std::env::var("SEED_ADMIN_EMAIL").unwrap_or_else(|_| "admin@agrograte.ai".into());
-    let password =
-        std::env::var("SEED_ADMIN_PASSWORD").unwrap_or_else(|_| "Admin123!".into());
+    let password = std::env::var("SEED_ADMIN_PASSWORD").unwrap_or_else(|_| "Admin123!".into());
     let full_name = std::env::var("SEED_ADMIN_NAME").unwrap_or_else(|_| "Admin User".into());
 
     use argon2::{
