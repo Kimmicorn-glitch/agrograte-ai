@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FileText, TrendingUp, Scale, Wallet, Download, Eye, ChevronRight, Calendar, Building2, AlertTriangle } from 'lucide-react'
+import { FileText, TrendingUp, Scale, Wallet, Download, Eye, ChevronRight, Building2, AlertTriangle } from 'lucide-react'
 import { staggerContainer, fadeInUp } from '@/lib/motion'
 import { api } from '@/lib/api'
 
@@ -13,7 +13,8 @@ const reportTypes = [
   { id: 'tax-summary', title: 'Tax Summary', description: 'SARS-ready tax computation and breakdown', icon: FileText },
 ]
 
-function formatCurrency(v: number): string {
+function formatCurrency(v: number | null | undefined): string {
+  if (v == null) return '—'
   return `R ${Math.abs(v).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`
 }
 
@@ -40,12 +41,12 @@ export default function ReportsPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  const revenue = health?.revenue || 4177730
-  const expenses = health?.expenses || 3487100
-  const profit = health?.profit || 690630
-  const cashBalance = cashflow?.current_balance || 2847530
-  const taxDue = compliance?.tax_liability_estimate || 384200
-  const vatDue = compliance?.vat_liability_estimate || 92450
+  const revenue = health?.revenue ?? null
+  const expenses = health?.expenses ?? null
+  const profit = health?.profit ?? null
+  const cashBalance = cashflow?.current_balance ?? null
+  const taxDue = compliance?.tax_liability_estimate ?? null
+  const vatDue = compliance?.vat_liability_estimate ?? null
 
   const previews: Record<string, { header: string; period: string; sections: { label: string; items: { name: string; amount: string }[]; total?: string }[]; footer?: string }> = {
     'income-statement': {
@@ -64,20 +65,20 @@ export default function ReportsPage() {
           label: 'Expenses',
           items: [
             { name: 'Total Expenses', amount: formatCurrency(expenses) },
-            { name: 'Operating Costs', amount: formatCurrency(expenses * 0.6) },
-            { name: 'Cost of Sales', amount: formatCurrency(expenses * 0.4) },
+            { name: 'Operating Costs', amount: formatCurrency(expenses == null ? null : expenses * 0.6) },
+            { name: 'Cost of Sales', amount: formatCurrency(expenses == null ? null : expenses * 0.4) },
           ],
           total: formatCurrency(expenses),
         },
         {
           label: 'Net Result',
-          items: [
-            { name: 'Net Profit', amount: formatCurrency(profit) },
-          ],
+          items: [{ name: 'Net Profit', amount: formatCurrency(profit) }],
           total: formatCurrency(profit),
         },
       ],
-      footer: `Net Profit Margin: ${revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : '0'}%`,
+      footer: revenue != null && profit != null && revenue > 0
+        ? `Net Profit Margin: ${((profit / revenue) * 100).toFixed(1)}%`
+        : 'Net Profit Margin: —',
     },
     'balance-sheet': {
       header: 'Balance Sheet',
@@ -87,27 +88,27 @@ export default function ReportsPage() {
           label: 'Assets',
           items: [
             { name: 'Cash & Cash Equivalents', amount: formatCurrency(cashBalance) },
-            { name: 'Accounts Receivable', amount: formatCurrency(revenue * 0.1) },
-            { name: 'Equipment & Software', amount: formatCurrency(revenue * 0.2) },
+            { name: 'Accounts Receivable', amount: formatCurrency(revenue == null ? null : revenue * 0.1) },
+            { name: 'Equipment & Software', amount: formatCurrency(revenue == null ? null : revenue * 0.2) },
           ],
-          total: formatCurrency(cashBalance + revenue * 0.3),
+          total: cashBalance == null || revenue == null ? '—' : formatCurrency(cashBalance + revenue * 0.3),
         },
         {
           label: 'Liabilities',
           items: [
             { name: 'Tax Payable', amount: formatCurrency(taxDue) },
             { name: 'VAT Payable', amount: formatCurrency(vatDue) },
-            { name: 'Accounts Payable', amount: formatCurrency(expenses * 0.05) },
+            { name: 'Accounts Payable', amount: formatCurrency(expenses == null ? null : expenses * 0.05) },
           ],
-          total: formatCurrency(taxDue + vatDue + expenses * 0.05),
+          total: taxDue == null || vatDue == null || expenses == null ? '—' : formatCurrency(taxDue + vatDue + expenses * 0.05),
         },
         {
           label: 'Equity',
           items: [
-            { name: 'Retained Earnings', amount: formatCurrency(profit * 0.7) },
-            { name: 'Share Capital', amount: formatCurrency(revenue * 0.3) },
+            { name: 'Retained Earnings', amount: formatCurrency(profit == null ? null : profit * 0.7) },
+            { name: 'Share Capital', amount: formatCurrency(revenue == null ? null : revenue * 0.3) },
           ],
-          total: formatCurrency(profit * 0.7 + revenue * 0.3),
+          total: profit == null || revenue == null ? '—' : formatCurrency(profit * 0.7 + revenue * 0.3),
         },
       ],
       footer: `Cash Position: ${formatCurrency(cashBalance)}`,
@@ -120,15 +121,15 @@ export default function ReportsPage() {
           label: 'Operating Activities',
           items: [
             { name: 'Cash from Revenue', amount: formatCurrency(revenue) },
-            { name: 'Cash Paid to Suppliers', amount: formatCurrency(-expenses * 0.6) },
-            { name: 'Cash Paid for Operations', amount: formatCurrency(-expenses * 0.4) },
+            { name: 'Cash Paid to Suppliers', amount: formatCurrency(expenses == null ? null : -expenses * 0.6) },
+            { name: 'Cash Paid for Operations', amount: formatCurrency(expenses == null ? null : -expenses * 0.4) },
           ],
-          total: formatCurrency(revenue - expenses),
+          total: revenue == null || expenses == null ? '—' : formatCurrency(revenue - expenses),
         },
         {
           label: 'Net Position',
           items: [
-            { name: 'Opening Balance', amount: formatCurrency(cashBalance - profit) },
+            { name: 'Opening Balance', amount: cashBalance == null || profit == null ? '—' : formatCurrency(cashBalance - profit) },
             { name: 'Net Cash Flow', amount: formatCurrency(profit) },
           ],
           total: formatCurrency(cashBalance),
@@ -146,17 +147,17 @@ export default function ReportsPage() {
             { name: 'Estimated Income Tax', amount: formatCurrency(taxDue) },
             { name: 'VAT Liability', amount: formatCurrency(vatDue) },
           ],
-          total: formatCurrency(taxDue + vatDue),
+          total: taxDue == null || vatDue == null ? '—' : formatCurrency(taxDue + vatDue),
         },
         {
           label: 'Compliance',
           items: [
-            { name: 'SARS Score', amount: `${compliance?.sars_compliance_score || 94}/100` },
-            { name: 'VAT Status', amount: compliance?.vat_compliant ? 'Compliant' : 'Action Required' },
+            { name: 'SARS Score', amount: compliance?.sars_compliance_score == null ? '—' : `${compliance.sars_compliance_score}/100` },
+            { name: 'VAT Status', amount: compliance?.vat_compliant == null ? '—' : compliance.vat_compliant ? 'Compliant' : 'Action Required' },
           ],
         },
       ],
-      footer: `SARS Compliance: ${compliance?.vat_compliant ? 'Up to Date' : 'Review Required'}`,
+      footer: `SARS Compliance: ${compliance?.vat_compliant == null ? '—' : compliance.vat_compliant ? 'Up to Date' : 'Review Required'}`,
     },
   }
 
@@ -220,7 +221,7 @@ export default function ReportsPage() {
               <div>
                 <h3 className="text-sm font-semibold text-secondary mb-1">SARS-Ready Reports</h3>
                 <p className="text-sm text-charcoal-600 leading-relaxed">
-                  All reports are formatted to SARS submission standards. Data computed from your actual financial metrics.
+                  All reports are formatted to SARS submission standards. Values are rendered only from API responses.
                 </p>
               </div>
             </div>
@@ -267,7 +268,7 @@ export default function ReportsPage() {
                   <span className="text-sm font-semibold text-secondary">{p.footer}</span>
                   <div className="flex items-center gap-2">
                     <Building2 size={14} className="text-charcoal-400" />
-                    <span className="text-caption text-charcoal-400">Agrograte AI &bull; SARS Compliant</span>
+                    <span className="text-caption text-charcoal-400">Agrograte AI</span>
                   </div>
                 </div>
               </div>
