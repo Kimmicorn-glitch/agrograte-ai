@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sidebar } from '@/components/layout/Sidebar'
 import { useAuth } from '@/hooks/useAuth'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -17,10 +16,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary-off">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-          <p className="text-sm text-charcoal-500 font-medium">Loading...</p>
+          <div className="w-8 h-8 border-2 border-[#C1121F]/30 border-t-[#C1121F] rounded-full animate-spin" />
+          <p className="text-sm text-[#495057] font-medium">Loading...</p>
         </div>
       </div>
     )
@@ -28,5 +27,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!user) return null
 
-  return <Sidebar>{children}</Sidebar>
+  return <>{children}</>
 }
