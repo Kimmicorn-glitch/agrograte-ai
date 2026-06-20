@@ -103,3 +103,6 @@ secrets/
 # OpenCode CLI
 # ============================
 cli/
+
+.vercel
+.env*
