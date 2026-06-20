@@ -8,6 +8,7 @@ interface Account {
   account_id: string
   account_number: string
   account_type: string
+  account_name?: string
   current_balance: number
   available_balance: number
 }
@@ -17,7 +18,7 @@ export function AccountListPanel() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.getInvestecAccounts()
+    api.getBankingAccounts()
       .then((data) => setAccounts(data))
       .catch(() => setAccounts([]))
       .finally(() => setLoading(false))
@@ -39,14 +40,14 @@ export function AccountListPanel() {
                 className="flex items-center justify-between p-3 rounded-lg bg-white/5"
               >
                 <div>
-                  <p className="text-xs font-mono text-white/80">{account.account_type}</p>
+                  <p className="text-xs font-mono text-white/80">{account.account_type || account.account_name || 'Account'}</p>
                   <p className="text-[0.65rem] text-white/40 font-mono">
-                    {account.account_number}
+                    {account.account_number || account.account_id}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-mono text-white/80">
-                    R {account.available_balance?.toLocaleString() ?? '0.00'}
+                    {account.available_balance == null ? '—' : `R ${account.available_balance.toLocaleString()}`}
                   </p>
                   <p className="text-[0.65rem] text-white/40">available</p>
                 </div>
