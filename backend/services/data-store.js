@@ -80,6 +80,7 @@ class DataStore {
   constructor() {
     this.data = null
     this.load()
+    this.seedSampleAccounts()
     this.seedSampleTransactions()
     this.seedSampleInvoices()
   }
@@ -265,8 +266,28 @@ class DataStore {
     this.save()
   }
 
+  seedSampleAccounts() {
+    if (Object.keys(this.data.accounts).length > 0) return
+    const now = new Date().toISOString()
+    this.data.accounts['acct-1'] = {
+      id: 'acct-1',
+      business_id: 'biz-1',
+      account_number: '92000000001',
+      account_name: 'Agrograte Primary Account',
+      account_type: 'current',
+      current_balance: 520000.0,
+      available_balance: 500000.0,
+      reserved_tax_funds: 60000.0,
+      is_active: true,
+      currency: 'ZAR',
+      created_at: now,
+    }
+    this.save()
+  }
+
   seedSampleTransactions() {
     if (Object.keys(this.data.transactions).length > 0) return
+    if (Object.keys(this.data.accounts).length === 0) this.seedSampleAccounts()
     const now = new Date()
     const categories = ['revenue', 'expenses', 'tax', 'compliance', 'banking']
     const descriptions = {
