@@ -1,9 +1,7 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
-import { api, type UserResponse } from '@/lib/api'
-
-const DEMO_MODE = typeof window !== 'undefined' && window.localStorage.getItem('agrograte.demo') === 'true'
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import type { UserResponse } from '@/lib/api'
 
 const DEMO_USER: UserResponse = {
   id: '00000000-0000-0000-0000-000000000000',
@@ -26,62 +24,26 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(DEMO_MODE ? DEMO_USER : null)
-  const [loading, setLoading] = useState(!DEMO_MODE)
+  const [user, setUser] = useState<UserResponse | null>(DEMO_USER)
+  const [loading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const refresh = useCallback(async () => {
-    try {
-      const res = await api.refresh()
-      setUser(res.user)
-    } catch {
-      api.clearAuth()
-      setUser(null)
-    }
+  const login = useCallback(async (_email: string, _password: string) => {
+    setError(null)
+    setUser(DEMO_USER)
   }, [])
 
-  useEffect(() => {
-    if (DEMO_MODE) return
-    const token = typeof window !== 'undefined' && window.localStorage.getItem('agrograte.access_token')
-    if (!token) {
-      setLoading(false)
-      return
-    }
-    api.me()
-      .then((u) => setUser(u))
-      .catch(() => refresh())
-      .finally(() => setLoading(false))
-  }, [refresh])
-
-  const login = useCallback(async (email: string, password: string) => {
+  const register = useCallback(async (_email: string, _password: string, _full_name: string) => {
     setError(null)
-    try {
-      const res = await api.login({ email, password })
-      setUser(res.user)
-    } catch (e: any) {
-      setError(e.message || 'Login failed')
-      throw e
-    }
-  }, [])
-
-  const register = useCallback(async (email: string, password: string, full_name: string) => {
-    setError(null)
-    try {
-      const res = await api.register({ email, password, full_name })
-      setUser(res.user)
-    } catch (e: any) {
-      setError(e.message || 'Registration failed')
-      throw e
-    }
+    setUser(DEMO_USER)
   }, [])
 
   const logout = useCallback(async () => {
-    try {
-      await api.logout()
-    } catch {
-      // ignore
-    }
     setUser(null)
+  }, [])
+
+  const refresh = useCallback(async () => {
+    setUser(DEMO_USER)
   }, [])
 
   return (
