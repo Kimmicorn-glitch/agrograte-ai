@@ -13,9 +13,9 @@ mod telemetry;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::time::Duration;
+
 use tokio::sync::RwLock;
-use tracing::{error, info, warn};
+use tracing::info;
 
 use crate::api::middleware::RateLimiter;
 use crate::api::AppRouter;
@@ -38,24 +38,11 @@ async fn main() -> anyhow::Result<()> {
         }
     }
 
-    info!("Agrograte AI starting up");
+    info!(event = "startup", "Agrograte AI starting up");
 
     let pool = db::connect(&config.database_url);
-    let pool_migrate = pool.clone();
-
-    tokio::spawn(async move {
-        for attempt in 1..=10 {
-            match db::run_migrations(&pool_migrate).await {
-                Ok(()) => return,
-                Err(e) => warn!("Migration attempt {}/10 failed: {}", attempt, e),
-            }
-            tokio::time::sleep(Duration::from_secs(3)).await;
-        }
-        error!("Migrations failed after 10 attempts — continuing without schema guarantee");
-    });
-
-    let redis = db::connect_redis(&config.redis_url).await;
-    let nats = db::connect_nats(&config.nats_url).await;
+    let redis = Arc::new(RwLock::new(None));
+    let nats = Arc::new(RwLock::new(None));
 
     let mut drrt_engine = DrrtEngine::new();
     drrt_engine
@@ -70,9 +57,9 @@ async fn main() -> anyhow::Result<()> {
     ));
 
     let app_state = AppState {
-        pool,
-        redis,
-        nats,
+        pool: pool.clone(),
+        redis: redis.clone(),
+        nats: nats.clone(),
         drrt: drrt_engine,
         investec,
         cashflow: CashFlowForecaster,
@@ -83,10 +70,39 @@ async fn main() -> anyhow::Result<()> {
 
     let router = AppRouter::new(app_state).build();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
-    info!("Listening on {}", addr);
-
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse::<u16>()
+        .unwrap();
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;
+
+    info!(event = "server_listening", %addr, "HTTP server listening");
+
+    let migration_pool = pool.clone();
+    tokio::spawn(async move {
+        db::run_migrations_with_retry(migration_pool).await;
+    });
+
+    let warmup_pool = pool.clone();
+    tokio::spawn(async move {
+        db::warmup_database(warmup_pool).await;
+    });
+
+    let redis_url = config.redis_url.clone();
+    let redis_state = redis.clone();
+    tokio::spawn(async move {
+        let manager = db::connect_redis(&redis_url).await;
+        *redis_state.write().await = manager;
+    });
+
+    let nats_url = config.nats_url.clone();
+    let nats_state = nats.clone();
+    tokio::spawn(async move {
+        let client = db::connect_nats(&nats_url).await;
+        *nats_state.write().await = client;
+    });
+
     axum::serve(listener, router).await?;
 
     Ok(())
@@ -95,8 +111,8 @@ async fn main() -> anyhow::Result<()> {
 #[derive(Clone)]
 pub struct AppState {
     pub pool: sqlx::PgPool,
-    pub redis: Option<redis::aio::ConnectionManager>,
-    pub nats: Option<async_nats::Client>,
+    pub redis: Arc<RwLock<Option<redis::aio::ConnectionManager>>>,
+    pub nats: Arc<RwLock<Option<async_nats::Client>>>,
     pub drrt: Arc<RwLock<DrrtEngine>>,
     pub investec: Arc<InvestecClient>,
     pub cashflow: CashFlowForecaster,
