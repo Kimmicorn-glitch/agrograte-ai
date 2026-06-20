@@ -245,85 +245,14 @@ class ComplianceEngine {
     const store = getDataStore()
     const existing = store.getVatReturns(businessId)
     if (existing.length > 0) return existing
-
-    const now = new Date()
-    const year = now.getFullYear()
-    const periods = this.getVatPeriods(year)
-    const transactions = store.getAllTransactionsForBusiness(businessId)
-
-    const returns = periods.slice(0, Math.min(periods.length, 6)).map(([start, end], i) => {
-      const periodTxns = transactions.filter(t => {
-        const d = new Date(t.posted_at)
-        return d >= start && d <= end
-      })
-      const sales = periodTxns.filter(t => t.transaction_type === 'credit').reduce((s, t) => s + Math.abs(t.amount), 0)
-      const purchases = periodTxns.filter(t => t.transaction_type === 'debit').reduce((s, t) => s + Math.abs(t.amount), 0)
-      const vatOnSales = Math.round(sales * VAT_RATE * 100) / 100
-      const vatOnPurchases = Math.round(purchases * VAT_RATE * 0.6 * 100) / 100
-      const netVat = Math.round(Math.max(0, vatOnSales - vatOnPurchases) * 100) / 100
-      const isSubmitted = i < now.getMonth() / 2
-
-      const vr = {
-        id: `vat-${year}-${i + 1}`,
-        business_id: businessId,
-        period: `${start.toLocaleString('default', { month: 'short' })}-${end.toLocaleString('default', { month: 'short' })}`,
-        period_start: start.toISOString(),
-        period_end: end.toISOString(),
-        total_sales: Math.round(sales * 100) / 100,
-        total_purchases: Math.round(purchases * 100) / 100,
-        vat_on_sales: vatOnSales,
-        vat_on_purchases: vatOnPurchases,
-        net_vat_due: netVat,
-        is_submitted: isSubmitted,
-        submission_date: isSubmitted ? new Date(end.getTime() + 25 * 86400000).toISOString() : null,
-        sars_reference: isSubmitted ? `SARS-VAT-${year}-${String(i + 1).padStart(3, '0')}` : null,
-        penalties: !isSubmitted && i < now.getMonth() / 2 - 1 ? Math.round(netVat * 0.1 * 100) / 100 : 0,
-      }
-      store.addVatReturn(vr)
-      return vr
-    })
-    return returns
+    return []
   }
 
   static generateTaxRecords(businessId) {
     const store = getDataStore()
     const existing = store.getTaxRecords(businessId)
     if (existing.length > 0) return existing
-
-    const now = new Date()
-    const year = now.getFullYear()
-    const transactions = store.getAllTransactionsForBusiness(businessId)
-    const totalRevenue = transactions
-      .filter(t => t.transaction_type === 'credit' && t.status === 'posted')
-      .reduce((s, t) => s + Math.abs(t.amount), 0)
-    const totalExpenses = transactions
-      .filter(t => t.transaction_type === 'debit' && t.status === 'posted')
-      .reduce((s, t) => s + Math.abs(t.amount), 0)
-
-    const taxTypes = [
-      { type: 'IncomeTax', period: `${year}`, due: this.calculateIncomeTax(totalRevenue, totalExpenses) },
-      { type: 'VAT', period: `${year}-H1`, due: this.calculateVatLiability(transactions, store.getInvoices(businessId)) * 0.5 },
-      { type: 'PAYE', period: `${year}-Q1`, due: this.calculatePaye(totalExpenses) * 0.25 },
-      { type: 'UIF', period: `${year}`, due: Math.round(totalExpenses * UIF_RATE * 100) / 100 },
-    ]
-
-    return taxTypes.map((t, i) => {
-      const wasFiled = i < 2
-      const tr = {
-        id: `tax-${year}-${i}`,
-        business_id: businessId,
-        tax_period: t.period,
-        tax_type: t.type,
-        amount_due: Math.round(t.due * 100) / 100,
-        amount_paid: wasFiled ? Math.round(t.due * 0.9 * 100) / 100 : 0,
-        balance: wasFiled ? 0 : Math.round(t.due * 100) / 100,
-        due_date: new Date(year, (i + 1) * 3 - 1, 31).toISOString(),
-        status: wasFiled ? 'Filed' : 'Pending',
-        filed_at: wasFiled ? new Date().toISOString() : null,
-      }
-      store.addTaxRecord(tr)
-      return tr
-    })
+    return []
   }
 }
 
