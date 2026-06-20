@@ -18,19 +18,25 @@ export function DiagnosticsPanel() {
 
   const checkServices = async () => {
     setLoading(true)
-    const start = Date.now()
-
     const results: ServiceStatus[] = []
 
     try {
-      const healthStart = Date.now()
-      const health = await fetch('/health').then(r => r.json())
+      const start = Date.now()
+      const health = await fetch('/api/health').then((r) => r.json())
+      const latency = `${Date.now() - start}ms`
       results.push({
         name: 'API Server',
         status: health.status === 'ok' ? 'ok' : 'degraded',
         icon: <Activity size={12} />,
-        detail: health.status === 'ok' ? 'Running' : 'Degraded',
-        latency: `${Date.now() - healthStart}ms`,
+        detail: `v${health.version || 'unknown'}`,
+        latency,
+      })
+      results.push({
+        name: 'Database',
+        status: health.database === 'connected' ? 'ok' : 'down',
+        icon: <Database size={12} />,
+        detail: health.database || 'unknown',
+        latency,
       })
     } catch {
       results.push({
@@ -40,84 +46,71 @@ export function DiagnosticsPanel() {
         detail: 'Unreachable',
         latency: '—',
       })
-    }
-
-    try {
-      const dbStart = Date.now()
-      await api.getDrrtState()
       results.push({
-        name: 'DRRT Engine',
-        status: 'ok',
-        icon: <Brain size={12} />,
-        detail: 'Tensor active',
-        latency: `${Date.now() - dbStart}ms`,
-      })
-    } catch {
-      results.push({
-        name: 'DRRT Engine',
-        status: 'degraded',
-        icon: <Brain size={12} />,
-        detail: 'Fallback mode',
+        name: 'Database',
+        status: 'down',
+        icon: <Database size={12} />,
+        detail: 'Unknown',
         latency: '—',
       })
     }
 
     try {
-      const compStart = Date.now()
-      await api.getComplianceSummary()
-      results.push({
-        name: 'Compliance Engine',
-        status: 'ok',
-        icon: <ShieldCheck size={12} />,
-        detail: 'SARS rules loaded',
-        latency: `${Date.now() - compStart}ms`,
-      })
-    } catch {
-      results.push({
-        name: 'Compliance Engine',
-        status: 'degraded',
-        icon: <ShieldCheck size={12} />,
-        detail: 'Limited functionality',
-        latency: '—',
-      })
-    }
-
-    try {
-      const invStart = Date.now()
-      await api.getInvestecStatus()
+      const start = Date.now()
+      const status = await api.getInvestecStatus()
       results.push({
         name: 'Investec',
-        status: 'ok',
+        status: status.connected ? 'ok' : 'degraded',
         icon: <Banknote size={12} />,
-        detail: 'Connected',
-        latency: `${Date.now() - invStart}ms`,
+        detail: status.connected ? `${status.accounts_linked || 0} accounts linked` : 'Disconnected',
+        latency: `${Date.now() - start}ms`,
       })
     } catch {
       results.push({
         name: 'Investec',
-        status: 'degraded',
+        status: 'down',
         icon: <Banknote size={12} />,
-        detail: 'Sandbox mode',
+        detail: 'Unavailable',
         latency: '—',
       })
     }
 
     try {
-      const orbStart = Date.now()
-      await api.getFinancialHealth()
+      const start = Date.now()
+      const summary = await api.getComplianceSummary()
       results.push({
-        name: 'Financial Orb',
-        status: 'ok',
-        icon: <Activity size={12} />,
-        detail: 'Live metrics',
-        latency: `${Date.now() - orbStart}ms`,
+        name: 'Compliance Engine',
+        status: summary ? 'ok' : 'degraded',
+        icon: <ShieldCheck size={12} />,
+        detail: summary ? `${summary.sars_compliance_score}/100` : 'No data',
+        latency: `${Date.now() - start}ms`,
       })
     } catch {
       results.push({
-        name: 'Financial Orb',
+        name: 'Compliance Engine',
         status: 'degraded',
-        icon: <Activity size={12} />,
-        detail: 'Cache mode',
+        icon: <ShieldCheck size={12} />,
+        detail: 'Limited',
+        latency: '—',
+      })
+    }
+
+    try {
+      const start = Date.now()
+      const health = await api.getFinancialHealth()
+      results.push({
+        name: 'Orb',
+        status: health ? 'ok' : 'degraded',
+        icon: <Brain size={12} />,
+        detail: health ? `${health.health_score}/100` : 'No data',
+        latency: `${Date.now() - start}ms`,
+      })
+    } catch {
+      results.push({
+        name: 'Orb',
+        status: 'degraded',
+        icon: <Brain size={12} />,
+        detail: 'No data',
         latency: '—',
       })
     }
