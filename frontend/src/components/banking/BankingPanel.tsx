@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/ui/GlassCard'
 import { MetricTile } from '@/components/ui/MetricTile'
 import { SectionTitle } from '@/components/ui/SectionTitle'
 import { staggerContainer, fadeInUp } from '@/lib/motion'
+import { api } from '@/lib/api'
 import type { BankingSummary } from '@/types'
 
 export function BankingPanel({
@@ -69,7 +70,18 @@ export function BankingPanel({
         </motion.div>
 
         <motion.div variants={fadeInUp} className="flex gap-2 pt-2">
-          <button className="btn-primary flex-1 text-xs py-2" onClick={() => window.location.href = '/api/investec/auth-url'}>
+          <button
+            className="btn-primary flex-1 text-xs py-2"
+            onClick={async () => {
+              try {
+                const { url } = await api.getInvestecAuthUrl()
+                window.open(url, '_blank', 'width=600,height=700')
+              } catch (error) {
+                console.error('Failed to open Investec auth URL', error)
+                window.location.href = '/api/investec/auth-url?redirect=true'
+              }
+            }}
+          >
             Connect Investec
           </button>
           <button className="btn-glass flex-1 text-xs py-2" onClick={() => window.location.href = '/dashboard/banking/rules'}>
