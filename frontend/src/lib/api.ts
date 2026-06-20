@@ -1,4 +1,6 @@
-const BASE_URL = ''
+// Use NEXT_PUBLIC_API_URL when deployed on Vercel (set in Project Environment)
+// Fallback to relative paths for local development.
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
 
 let accessToken: string | null = null
 let refreshTokenValue: string | null = null
