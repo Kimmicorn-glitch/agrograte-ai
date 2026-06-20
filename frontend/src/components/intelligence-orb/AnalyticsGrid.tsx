@@ -54,7 +54,17 @@ function MetricCard({
 }
 
 export function AnalyticsGrid() {
-  const { metrics } = useOrbMetrics()
+  const { metrics, loading } = useOrbMetrics()
+
+  if (loading) {
+    return (
+      <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="space-y-6">
+        <div className="card">
+          <div className="text-caption text-charcoal-400">Loading live analytics...</div>
+        </div>
+      </motion.div>
+    )
+  }
 
   const cards = [
     {
