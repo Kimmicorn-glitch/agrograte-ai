@@ -83,23 +83,38 @@ class InvestecClient {
   }
 
   async getAccounts() {
-    if (!this.isConfigured()) {
-      return this._sandboxAccounts()
-    }
     const tokens = getDataStore().getInvestecTokens()
-    if (!tokens) return []
+    if (!this.isConfigured() || !tokens?.access_token) return []
     const data = await this._get(`${INVESTEC_API_BASE}/za/pb/v1/accounts`, {
       Authorization: `Bearer ${tokens.access_token}`,
     })
-    return data.data?.accounts || []
+    const accounts = data.data?.accounts || []
+    const store = getDataStore()
+    for (const account of accounts) {
+      const id = account.account_id || account.accountId || account.id
+      if (!id) continue
+      store.data.accounts[id] = {
+        id,
+        business_id: 'biz-1',
+        account_number: account.account_number || account.accountNumber || '',
+        account_name: account.account_name || account.accountName || '',
+        account_type: account.account_type || account.accountType || 'current',
+        current_balance: Number(account.current_balance ?? account.currentBalance ?? 0),
+        available_balance: Number(account.available_balance ?? account.availableBalance ?? 0),
+        reserved_tax_funds: Number(account.reserved_tax_funds ?? 0),
+        is_active: true,
+        currency: account.currency || 'ZAR',
+        created_at: new Date().toISOString(),
+      }
+    }
+    store.save()
+    store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
+    return accounts
   }
 
   async getTransactions(accountId, fromDate, toDate) {
-    if (!this.isConfigured()) {
-      return this._sandboxTransactions(accountId)
-    }
     const tokens = getDataStore().getInvestecTokens()
-    if (!tokens) return []
+    if (!this.isConfigured() || !tokens?.access_token || !accountId) return []
     let url = `${INVESTEC_API_BASE}/za/pb/v1/accounts/${accountId}/transactions`
     const params = new URLSearchParams()
     if (fromDate) params.set('fromDate', fromDate)
@@ -109,57 +124,38 @@ class InvestecClient {
     const data = await this._get(url, {
       Authorization: `Bearer ${tokens.access_token}`,
     })
-    return data.data?.transactions || []
+    const txns = data.data?.transactions || []
+    const store = getDataStore()
+    for (const txn of txns) {
+      const id = txn.transaction_id || txn.transactionId || txn.id
+      if (!id) continue
+      store.data.transactions[id] = {
+        id,
+        account_id: accountId,
+        amount: Number(txn.amount ?? 0),
+        balance: Number(txn.balance ?? 0),
+        description: txn.description || txn.merchant?.name || 'Investec transaction',
+        category: txn.category || 'banking',
+        transaction_type: txn.transaction_type || txn.transactionType || (Number(txn.amount ?? 0) >= 0 ? 'credit' : 'debit'),
+        status: txn.status || 'posted',
+        posted_at: txn.posting_date || txn.transactionDate || txn.posted_at || new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        merchant: txn.merchant || { name: txn.description || 'Investec transaction' },
+      }
+    }
+    store.save()
+    store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
+    return txns
   }
 
   getConnectionStatus() {
     const tokens = getDataStore().getInvestecTokens()
     const accounts = getDataStore().getAccounts('biz-1')
     return {
-      connected: !!(tokens && tokens.access_token) || this.isConfigured(),
+      connected: !!(tokens && tokens.access_token && this.isConfigured()),
       accounts_linked: accounts.length,
       last_sync: tokens?.last_sync || null,
     }
-  }
-
-  _sandboxAccounts() {
-    const store = getDataStore()
-    const accounts = store.getAccounts('biz-1')
-    return accounts.map(a => ({
-      accountId: a.id,
-      accountNumber: a.account_number,
-      accountName: a.account_name,
-      accountType: a.account_type,
-      currentBalance: a.current_balance,
-      availableBalance: a.available_balance,
-      currency: a.currency || 'ZAR',
-    }))
-  }
-
-  _sandboxTransactions(accountId) {
-    const store = getDataStore()
-    const transactions = store.getTransactions(accountId)
-    if (transactions.length === 0) {
-      const allTxns = store.getAllTransactionsForBusiness('biz-1')
-      return allTxns.slice(0, 50).map(t => ({
-        transactionId: t.id,
-        amount: t.amount,
-        description: t.description,
-        transactionType: t.transaction_type,
-        transactionDate: t.posted_at,
-        merchant: t.merchant || { name: t.description },
-        status: t.status,
-      }))
-    }
-    return transactions.slice(0, 50).map(t => ({
-      transactionId: t.id,
-      amount: t.amount,
-      description: t.description,
-      transactionType: t.transaction_type,
-      transactionDate: t.posted_at,
-      merchant: t.merchant || { name: t.description },
-      status: t.status,
-    }))
   }
 
   _get(url, headers) {
