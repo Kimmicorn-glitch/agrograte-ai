@@ -18,7 +18,7 @@ export function TransactionFeed() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.getInvestecTransactions('')
+    api.getBankingTransactions()
       .then((data) => setTransactions(data))
       .catch(() => setTransactions([]))
       .finally(() => setLoading(false))
@@ -46,7 +46,7 @@ export function TransactionFeed() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-mono text-white/80 truncate">
-                    {txn.merchant?.name || txn.description || 'Unknown'}
+                    {txn.merchant?.name || txn.description || 'Unknown transaction'}
                   </p>
                   <p className="text-[0.6rem] text-white/30 font-mono">
                     {txn.posting_date ? new Date(txn.posting_date).toLocaleDateString() : ''}
