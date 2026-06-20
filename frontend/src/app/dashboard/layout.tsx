@@ -1,6 +1,6 @@
 'use client'
 
-import { Sidebar } from '@/components/layout/Sidebar'
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import dynamic from 'next/dynamic'
 
@@ -12,9 +12,9 @@ const DiagnosticsPanel = dynamic(
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <ErrorBoundary>
-      <Sidebar>
+      <DashboardSidebar>
         {children}
-      </Sidebar>
+      </DashboardSidebar>
       <DiagnosticsPanel />
     </ErrorBoundary>
   )
