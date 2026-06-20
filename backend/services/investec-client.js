@@ -82,9 +82,48 @@ class InvestecClient {
     })
   }
 
+  isSandbox() {
+    return !this.isConfigured()
+  }
+
   async getAccounts() {
     const tokens = getDataStore().getInvestecTokens()
-    if (!this.isConfigured() || !tokens?.access_token) return []
+    if (!tokens?.access_token) return []
+    if (this.isSandbox()) {
+      const sampleAccounts = [
+        {
+          account_id: 'sandbox-1',
+          account_number: '92000000001',
+          account_type: 'current',
+          account_name: 'Sandbox Primary Account',
+          current_balance: 250000,
+          available_balance: 230000,
+          currency: 'ZAR',
+        },
+      ]
+      const store = getDataStore()
+      for (const account of sampleAccounts) {
+        const id = account.account_id
+        if (!store.getAccount(id)) {
+          store.data.accounts[id] = {
+            id,
+            business_id: 'biz-1',
+            account_number: account.account_number,
+            account_name: account.account_name,
+            account_type: account.account_type,
+            current_balance: Number(account.current_balance || 0),
+            available_balance: Number(account.available_balance || 0),
+            reserved_tax_funds: 0,
+            is_active: true,
+            currency: account.currency || 'ZAR',
+            created_at: new Date().toISOString(),
+          }
+        }
+      }
+      store.save()
+      store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
+      return sampleAccounts
+    }
     const data = await this._get(`${INVESTEC_API_BASE}/za/pb/v1/accounts`, {
       Authorization: `Bearer ${tokens.access_token}`,
     })
@@ -114,7 +153,46 @@ class InvestecClient {
 
   async getTransactions(accountId, fromDate, toDate) {
     const tokens = getDataStore().getInvestecTokens()
-    if (!this.isConfigured() || !tokens?.access_token || !accountId) return []
+    if (!tokens?.access_token || !accountId) return []
+    if (this.isSandbox()) {
+      const store = getDataStore()
+      const existing = store.getTransactions(accountId)
+      if (existing.length > 0) {
+        return existing
+      }
+      const descriptions = [
+        'Sandbox Deposit',
+        'Sandbox Payroll',
+        'Sandbox Supplier Payment',
+        'Sandbox VAT Payment',
+        'Sandbox Fee',
+      ]
+      const txns = []
+      for (let i = 0; i < 30; i++) {
+        const date = new Date()
+        date.setDate(date.getDate() - i)
+        const isCredit = i % 2 === 0
+        const amount = Math.round((2500 + Math.random() * 15000) * 100) / 100
+        const txn = {
+          id: `sandbox-${accountId}-${i}`,
+          account_id: accountId,
+          amount: isCredit ? amount : -amount,
+          balance: 0,
+          description: descriptions[i % descriptions.length],
+          category: isCredit ? 'revenue' : 'expenses',
+          transaction_type: isCredit ? 'credit' : 'debit',
+          status: 'posted',
+          posted_at: date.toISOString(),
+          created_at: date.toISOString(),
+          merchant: { name: descriptions[i % descriptions.length] },
+        }
+        store.data.transactions[txn.id] = txn
+        txns.push(txn)
+      }
+      store.save()
+      store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
+      return txns
+    }
     let url = `${INVESTEC_API_BASE}/za/pb/v1/accounts/${accountId}/transactions`
     const params = new URLSearchParams()
     if (fromDate) params.set('fromDate', fromDate)
@@ -150,10 +228,11 @@ class InvestecClient {
 
   getConnectionStatus() {
     const tokens = getDataStore().getInvestecTokens()
-    const accounts = getDataStore().getAccounts('biz-1')
+    const connected = !!(tokens?.access_token && (this.isConfigured() || this.isSandbox()))
+    const accounts = connected ? getDataStore().getAccounts('biz-1') : []
     return {
-      connected: !!(tokens && tokens.access_token && this.isConfigured()),
-      accounts_linked: accounts.length,
+      connected,
+      accounts_linked: connected ? accounts.length : 0,
       last_sync: tokens?.last_sync || null,
     }
   }
