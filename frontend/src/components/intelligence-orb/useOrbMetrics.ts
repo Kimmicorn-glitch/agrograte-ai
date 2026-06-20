@@ -25,27 +25,27 @@ export function useOrbMetrics() {
 
         if (!mounted) return
 
-        const healthScore = health ? Math.max(0, Math.min(1, health.health_score / 100)) : 0.5
+        const healthScore = health ? Math.max(0, Math.min(1, health.health_score / 100)) : 0
         const complianceScore = compliance
           ? Math.max(0, Math.min(1, (compliance.sars_compliance_score || 0) / 100))
-          : 0.5
-        const forecastConfidence = cashflow ? Math.max(0, Math.min(1, cashflow.confidence || 0.5)) : 0.5
-        const riskLevel = health && health.risk_score ? 1 - Math.max(0, Math.min(1, health.risk_score)) : 0.3
+          : 0
+        const forecastConfidence = cashflow ? Math.max(0, Math.min(1, cashflow.confidence || 0)) : 0
+        const riskLevel = health && health.risk_score != null ? 1 - Math.max(0, Math.min(1, health.risk_score)) : 0
         const cashflowHealth = cashflow
           ? Math.max(0, Math.min(1, (cashflow.projected_balance || 0) / 5000000))
           : healthScore
         const revenueMomentum = health
           ? Math.max(0, Math.min(1, (health.revenue || 0) / 5000000))
-          : 0.5
+          : 0
         const expenseRatio = health && health.revenue
           ? Math.max(0, Math.min(1, (health.expenses || 0) / Math.max(health.revenue, 1)))
-          : 0.5
+          : 0
         const taxLiability = compliance
           ? Math.max(0, Math.min(1, (compliance.vat_liability_estimate || 0) / 1000000))
-          : 0.3
+          : 0
         const transactionVelocity = cashflow
           ? Math.max(0, Math.min(1, ((cashflow.avg_daily_inflow || 0) + (cashflow.avg_daily_outflow || 0)) / 100000))
-          : 0.5
+          : 0
 
         setMetrics({
           cashflowHealth,
