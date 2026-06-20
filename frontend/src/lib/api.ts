@@ -153,6 +153,8 @@ export const api = {
   getCashflowDetail: () => fetchJSON<any>('/api/cashflow/detail'),
   getTaxReserve: () => fetchJSON<any>('/api/cashflow/tax-reserve'),
 
+  getBankingAccounts: () => fetchJSON<any[]>('/api/banking/accounts'),
+  getBankingTransactions: () => fetchJSON<any[]>('/api/banking/transactions'),
   getInvestecStatus: () => fetchJSON<any>('/api/investec/status'),
   getInvestecAccounts: () => fetchJSON<any[]>('/api/investec/accounts'),
   getInvestecAuthUrl: () => fetchJSON<{ url: string; state: string }>('/api/investec/auth-url'),
