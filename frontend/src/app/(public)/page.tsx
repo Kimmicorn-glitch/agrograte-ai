@@ -8,7 +8,7 @@ import { staggerContainer, fadeInUp } from '@/lib/motion'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.25, 0.1, 0.25, 1] as const } },
 }
 
 function InViewSection({ children, className }: { children: React.ReactNode; className?: string }) {
