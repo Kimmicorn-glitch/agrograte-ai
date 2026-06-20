@@ -81,7 +81,10 @@ async fn main() -> anyhow::Result<()> {
 
     let migration_pool = pool.clone();
     tokio::spawn(async move {
-        db::run_migrations_with_retry(migration_pool).await;
+        db::run_migrations_with_retry(migration_pool.clone()).await;
+        if let Err(e) = db::seed_default_user(&migration_pool).await {
+            tracing::warn!(event = "seed_failed", error = %e, "Failed to seed default user");
+        }
     });
 
     let warmup_pool = pool.clone();
