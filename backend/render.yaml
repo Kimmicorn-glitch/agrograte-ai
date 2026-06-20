@@ -1,0 +1,17 @@
+services:
+  - type: web
+    runtime: node
+    name: agrograte-api
+    repo: https://github.com/Kimmicorn-glitch/agrograte-ai
+    branch: main
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    region: frankfurt
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
