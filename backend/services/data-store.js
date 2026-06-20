@@ -15,17 +15,17 @@ const INITIAL_DATA = {
     },
   },
   accounts: {},
-  transactions: [],
-  invoices: [],
-  customers: [],
-  suppliers: [],
-  tax_records: [],
-  vat_returns: [],
-  financial_statements: [],
-  cash_flow_forecasts: [],
-  programmable_rules: [],
-  approval_workflows: [],
-  audit_logs: [],
+  transactions: {},
+  invoices: {},
+  customers: {},
+  suppliers: {},
+  tax_records: {},
+  vat_returns: {},
+  financial_statements: {},
+  cash_flow_forecasts: {},
+  programmable_rules: {},
+  approval_workflows: {},
+  audit_logs: {},
   users: {
     'user-1': {
       id: 'user-1',
@@ -80,6 +80,8 @@ class DataStore {
   constructor() {
     this.data = null
     this.load()
+    this.seedSampleTransactions()
+    this.seedSampleInvoices()
   }
 
   load() {

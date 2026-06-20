@@ -245,14 +245,53 @@ class ComplianceEngine {
     const store = getDataStore()
     const existing = store.getVatReturns(businessId)
     if (existing.length > 0) return existing
-    return []
+
+    const now = new Date()
+    const year = now.getFullYear()
+    const periods = this.getVatPeriods(year)
+    const sample = periods.map(([start, end], i) => {
+      const vatOnSales = Math.round((500000 + Math.random() * 300000) * 100) / 100
+      const vatOnPurchases = Math.round((300000 + Math.random() * 150000) * 100) / 100
+      const netVatDue = Math.max(0, Math.round((vatOnSales - vatOnPurchases) * 100) / 100)
+      return {
+        id: `vat-${i}`,
+        business_id: businessId,
+        period: `${start.toLocaleString('default', { month: 'short' })}-${end.toLocaleString('default', { month: 'short' })} ${year}`,
+        period_start: start.toISOString(),
+        period_end: end.toISOString(),
+        vat_on_sales: vatOnSales,
+        vat_on_purchases: vatOnPurchases,
+        net_vat_due: netVatDue,
+        is_submitted: i < 3,
+        penalties: 0,
+        created_at: new Date().toISOString(),
+      }
+    })
+    sample.forEach(v => store.addVatReturn(v))
+    return store.getVatReturns(businessId)
   }
 
   static generateTaxRecords(businessId) {
     const store = getDataStore()
     const existing = store.getTaxRecords(businessId)
     if (existing.length > 0) return existing
-    return []
+
+    const now = new Date()
+    const year = now.getFullYear()
+    const taxTypes = ['Provisional Tax', 'Income Tax', 'Capital Gains Tax']
+    const sample = taxTypes.map((type, i) => ({
+      id: `tax-${i}`,
+      business_id: businessId,
+      tax_type: type,
+      tax_period: `${year}`,
+      amount_due: Math.round((100000 + Math.random() * 400000) * 100) / 100,
+      amount_paid: i === 0 ? Math.round((80000 + Math.random() * 50000) * 100) / 100 : 0,
+      balance: 0,
+      status: i < 2 ? 'Filed' : 'Pending',
+      created_at: new Date().toISOString(),
+    }))
+    sample.forEach(t => store.addTaxRecord(t))
+    return store.getTaxRecords(businessId)
   }
 }
 
