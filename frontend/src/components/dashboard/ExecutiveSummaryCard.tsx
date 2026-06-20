@@ -9,7 +9,7 @@ interface ExecutiveSummaryCardProps {
   label: string
   value: string
   change?: string
-  trend?: 'up' | 'down' | 'warning' | 'info'
+  trend?: 'up' | 'down' | 'warning' | 'info' | 'neutral'
   subtitle?: string
   index?: number
   onClick?: () => void
@@ -20,6 +20,7 @@ const trendIcons: Record<string, React.ReactNode> = {
   down: <TrendingDown size={14} className="text-error" />,
   warning: <AlertTriangle size={14} className="text-warning" />,
   info: <Info size={14} className="text-info" />,
+  neutral: <Info size={14} className="text-charcoal-400" />,
 }
 
 const trendColors: Record<string, string> = {
@@ -27,6 +28,7 @@ const trendColors: Record<string, string> = {
   down: 'text-error',
   warning: 'text-warning',
   info: 'text-info',
+  neutral: 'text-charcoal-400',
 }
 
 export function ExecutiveSummaryCard({

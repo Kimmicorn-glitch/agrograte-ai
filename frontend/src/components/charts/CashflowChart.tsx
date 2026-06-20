@@ -9,15 +9,15 @@ import { SectionTitle } from '@/components/ui/SectionTitle'
 import { fadeInUp } from '@/lib/motion'
 
 const data = [
-  { label: 'Jan', revenue: 42000, expenses: 38000, forecast: false },
-  { label: 'Feb', revenue: 45000, expenses: 36000, forecast: false },
-  { label: 'Mar', revenue: 48000, expenses: 39000, forecast: false },
-  { label: 'Apr', revenue: 51000, expenses: 37000, forecast: false },
-  { label: 'May', revenue: 49000, expenses: 40000, forecast: false },
-  { label: 'Jun', revenue: 53000, expenses: 41000, forecast: false },
-  { label: 'Jul', revenue: 55000, expenses: 38000, forecast: true },
-  { label: 'Aug', revenue: 58000, expenses: 42000, forecast: true },
-  { label: 'Sep', revenue: 60000, expenses: 40000, forecast: true },
+  { label: 'Jan', revenue: 42000, expenses: 38000 },
+  { label: 'Feb', revenue: 45000, expenses: 36000 },
+  { label: 'Mar', revenue: 48000, expenses: 39000 },
+  { label: 'Apr', revenue: 51000, expenses: 37000 },
+  { label: 'May', revenue: 49000, expenses: 40000 },
+  { label: 'Jun', revenue: 53000, expenses: 41000 },
+  { label: 'Jul', revenue: 55000, expenses: 38000 },
+  { label: 'Aug', revenue: 58000, expenses: 42000 },
+  { label: 'Sep', revenue: 60000, expenses: 40000 },
 ]
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -72,10 +72,6 @@ export function CashflowChart() {
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-0.5 bg-silver-300 rounded" />
             Expenses
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-white/20" style={{ opacity: 0.4 }} />
-            Forecast
           </div>
         </div>
       </motion.div>

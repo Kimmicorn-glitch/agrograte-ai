@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "businesses": {
+    "biz-1": {
+      "id": "biz-1",
+      "name": "Demo Business Pty Ltd",
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  "accounts": {
+    "acct-1": {
+      "id": "acct-1",
+      "business_id": "biz-1",
+      "account_number": "12345678901",
+      "account_name": "Business Current Account",
+      "account_type": "current",
+      "current_balance": 2847530,
+      "available_balance": 2812340,
+      "reserved_tax_funds": 384200,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2025-01-15T00:00:00Z"
+    },
+    "acct-2": {
+      "id": "acct-2",
+      "business_id": "biz-1",
+      "account_number": "98765432101",
+      "account_name": "Business Savings Account",
+      "account_type": "savings",
+      "current_balance": 650000,
+      "available_balance": 650000,
+      "reserved_tax_funds": 50000,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2025-02-01T00:00:00Z"
+    }
+  },
+  "transactions": [],
+  "invoices": [],
+  "customers": [],
+  "suppliers": [],
+  "tax_records": [],
+  "vat_returns": [],
+  "financial_statements": [],
+  "cash_flow_forecasts": [],
+  "programmable_rules": [],
+  "approval_workflows": [],
+  "audit_logs": [],
+  "users": {
+    "user-1": {
+      "id": "user-1",
+      "email": "demo@agrograte.ai",
+      "full_name": "Demo User",
+      "role": "admin",
+      "business_id": "biz-1",
+      "password_hash": "demo",
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  "drrt_state": {
+    "coherence": 0.714,
+    "contradiction": 0.086,
+    "frustration_index": 0.2,
+    "global_coherence": 0.714,
+    "stability": 0.914,
+    "entropy": 0.3,
+    "convergence_iterations": 42,
+    "trend": "improving",
+    "dimensions": [
+      {
+        "id": "dim-1",
+        "name": "Cash Flow",
+        "weight": 0.25,
+        "activation": 1
+      },
+      {
+        "id": "dim-2",
+        "name": "Revenue",
+        "weight": 0.2,
+        "activation": 1
+      },
+      {
+        "id": "dim-3",
+        "name": "Expenses",
+        "weight": 0.15,
+        "activation": 0.756
+      },
+      {
+        "id": "dim-4",
+        "name": "Compliance",
+        "weight": 0.2,
+        "activation": 0.63
+      },
+      {
+        "id": "dim-5",
+        "name": "Risk",
+        "weight": 0.1,
+        "activation": 0.286
+      },
+      {
+        "id": "dim-6",
+        "name": "Forecast",
+        "weight": 0.1,
+        "activation": 0.7
+      }
+    ],
+    "relationships": [],
+    "memory": [],
+    "financial_metrics": {
+      "total_balance": 3772430,
+      "free_cash": 1131729,
+      "liquidity_ratio": 1,
+      "revenue": 3772430,
+      "expenses": 1842027,
+      "profit": 1930403,
+      "vat_compliance_ratio": 0.5,
+      "tax_compliance_ratio": 0.5,
+      "compliance_score": 0.63,
+      "transaction_volume_90d": 3947892.3000000003,
+      "transaction_count_90d": 90,
+      "pending_transaction_ratio": 0.1,
+      "successful_transaction_ratio": 0.9,
+      "paid_invoice_ratio": 0
+    }
+  },
+  "investec_tokens": null
+}

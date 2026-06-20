@@ -1,27 +1,78 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import { useOrbStore, generateSimulatedMetrics } from './store'
+import { useEffect, useState, useRef } from 'react'
+import { useOrbStore } from './store'
+import { api } from '@/lib/api'
 
 export function useOrbMetrics() {
   const setMetrics = useOrbStore((s) => s.setMetrics)
+  const metrics = useOrbStore((s) => s.metrics)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const intervalRef = useRef<NodeJS.Timeout>()
 
   useEffect(() => {
-    const tick = () => {
-      const fresh = generateSimulatedMetrics()
-      setMetrics(fresh)
+    let mounted = true
+
+    const fetchData = async () => {
+      try {
+        const [health, compliance, cashflow, banking] = await Promise.all([
+          api.getFinancialHealth().catch(() => null),
+          api.getComplianceSummary().catch(() => null),
+          api.getCashflowForecast().catch(() => null),
+          api.getBankingSummary().catch(() => null),
+        ])
+
+        if (!mounted) return
+
+        const healthScore = health ? Math.max(0, Math.min(1, health.health_score / 100)) : 0.5
+        const complianceScore = compliance
+          ? Math.max(0, Math.min(1, (compliance.sars_compliance_score || 0) / 100))
+          : 0.5
+        const forecastConfidence = cashflow ? Math.max(0, Math.min(1, cashflow.confidence || 0.5)) : 0.5
+        const riskLevel = health && health.risk_score ? 1 - Math.max(0, Math.min(1, health.risk_score)) : 0.3
+        const cashflowHealth = cashflow
+          ? Math.max(0, Math.min(1, (cashflow.projected_balance || 0) / 5000000))
+          : healthScore
+        const revenueMomentum = health
+          ? Math.max(0, Math.min(1, (health.revenue || 0) / 5000000))
+          : 0.5
+        const expenseRatio = health && health.revenue
+          ? Math.max(0, Math.min(1, (health.expenses || 0) / Math.max(health.revenue, 1)))
+          : 0.5
+        const taxLiability = compliance
+          ? Math.max(0, Math.min(1, (compliance.vat_liability_estimate || 0) / 1000000))
+          : 0.3
+        const transactionVelocity = cashflow
+          ? Math.max(0, Math.min(1, ((cashflow.avg_daily_inflow || 0) + (cashflow.avg_daily_outflow || 0)) / 100000))
+          : 0.5
+
+        setMetrics({
+          cashflowHealth,
+          taxLiability,
+          complianceScore,
+          forecastConfidence,
+          transactionVelocity,
+          riskLevel,
+          revenueMomentum,
+          expenseRatio,
+        })
+        setError(null)
+      } catch (e: any) {
+        if (mounted) setError(e.message)
+      } finally {
+        if (mounted) setLoading(false)
+      }
     }
 
-    tick()
-    intervalRef.current = setInterval(tick, 3000)
+    fetchData()
+    intervalRef.current = setInterval(fetchData, 15000)
 
     return () => {
+      mounted = false
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
   }, [setMetrics])
-
-  const metrics = useOrbStore((s) => s.metrics)
 
   const insights = [
     {
@@ -79,5 +130,5 @@ export function useOrbMetrics() {
     },
   ]
 
-  return { metrics, insights }
+  return { metrics, insights, loading, error }
 }

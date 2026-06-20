@@ -1,61 +1,48 @@
+'use client'
+
+import { clsx } from 'clsx'
+
 interface SkeletonProps {
   className?: string
-  count?: number
+  variant?: 'text' | 'card' | 'chart' | 'circle'
 }
 
-export function Skeleton({ className = '', count = 1 }: SkeletonProps) {
-  if (count === 1) {
-    return <div className={`skeleton ${className}`} />
-  }
-
+export function Skeleton({ className, variant = 'text' }: SkeletonProps) {
   return (
-    <>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={`skeleton ${className}`} />
-      ))}
-    </>
+    <div
+      className={clsx(
+        'animate-pulse-soft rounded-md bg-charcoal-100/50',
+        variant === 'text' && 'h-4 w-full',
+        variant === 'card' && 'h-32 w-full',
+        variant === 'chart' && 'h-48 w-full',
+        variant === 'circle' && 'h-10 w-10 rounded-full',
+        className,
+      )}
+    />
   )
 }
 
-export function MetricSkeleton() {
+export function MetricTileSkeleton() {
   return (
-    <div className="card space-y-3">
-      <Skeleton className="h-3 w-24" />
-      <Skeleton className="h-8 w-36" />
-      <Skeleton className="h-3 w-20" />
+    <div className="space-y-2">
+      <Skeleton variant="text" className="w-24" />
+      <Skeleton variant="text" className="w-32 h-6" />
     </div>
   )
 }
 
-export function TableSkeleton({ rows = 5 }: { rows?: number }) {
+export function DashboardSkeleton() {
   return (
-    <div className="space-y-3">
-      <div className="flex gap-4">
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="h-4 w-1/4" />
-        <Skeleton className="h-4 w-1/4" />
+    <div className="space-y-6">
+      <div className="grid grid-cols-5 gap-4">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} variant="card" className="h-28" />
+        ))}
       </div>
-      {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex gap-4">
-          <Skeleton className="h-3 w-1/4" />
-          <Skeleton className="h-3 w-1/4" />
-          <Skeleton className="h-3 w-1/4" />
-          <Skeleton className="h-3 w-1/4" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-export function ChartSkeleton() {
-  return (
-    <div className="card space-y-4">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-4 w-16" />
+      <div className="grid grid-cols-3 gap-6">
+        <Skeleton variant="chart" className="col-span-2 h-64" />
+        <Skeleton variant="card" className="h-64" />
       </div>
-      <Skeleton className="h-48 w-full" />
     </div>
   )
 }

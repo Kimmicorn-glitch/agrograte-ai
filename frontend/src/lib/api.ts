@@ -1,29 +1,43 @@
 const BASE_URL = ''
 
+let accessToken: string | null = null
+let refreshTokenValue: string | null = null
+
 function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null
-  return window.localStorage.getItem('agrograte.access_token')
+  if (accessToken) return accessToken
+  accessToken = window.localStorage.getItem('agrograte.access_token')
+  return accessToken
 }
 
 function setAccessToken(token: string) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem('agrograte.access_token', token)
+  accessToken = token
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem('agrograte.access_token', token)
+  }
 }
 
 function getRefreshToken(): string | null {
   if (typeof window === 'undefined') return null
-  return window.localStorage.getItem('agrograte.refresh_token')
+  if (refreshTokenValue) return refreshTokenValue
+  refreshTokenValue = window.localStorage.getItem('agrograte.refresh_token')
+  return refreshTokenValue
 }
 
 function setRefreshToken(token: string) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem('agrograte.refresh_token', token)
+  refreshTokenValue = token
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem('agrograte.refresh_token', token)
+  }
 }
 
 function clearTokens() {
-  if (typeof window === 'undefined') return
-  window.localStorage.removeItem('agrograte.access_token')
-  window.localStorage.removeItem('agrograte.refresh_token')
+  accessToken = null
+  refreshTokenValue = null
+  if (typeof window !== 'undefined') {
+    window.localStorage.removeItem('agrograte.access_token')
+    window.localStorage.removeItem('agrograte.refresh_token')
+  }
 }
 
 function getAuthHeaders(): HeadersInit {
@@ -42,7 +56,7 @@ async function fetchJSON<T>(path: string, options?: RequestInit): Promise<T> {
   })
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({ error: 'Unknown error' }))
+    const error = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
     throw new Error(error.error || `HTTP ${res.status}`)
   }
 
@@ -114,37 +128,41 @@ export const api = {
   me: () => fetchJSON<UserResponse>('/api/auth/me'),
 
   clearAuth: clearTokens,
-  getDrrtState: () => fetchJSON<any>('/api/drrt/state'),
-  getDrrtDimensions: () => fetchJSON<any>('/api/drrt/dimensions'),
-  getDrrtMemory: () => fetchJSON<any>('/api/drrt/memory'),
-  convergeDrrt: () => fetchJSON<any>('/api/drrt/converge', { method: 'POST' }),
+
+  getDrrtState: () => fetchJSON<{ state: any }>('/api/drrt/state').then(r => r.state),
+  getDrrtDimensions: () => fetchJSON<{ dimensions: any[] }>('/api/drrt/dimensions').then(r => r.dimensions),
+  getDrrtMemory: () => fetchJSON<{ memory: any[] }>('/api/drrt/memory').then(r => r.memory),
+  convergeDrrt: () => fetchJSON<{ success: boolean; state: any }>('/api/drrt/converge', { method: 'POST' }),
   addRelationship: (data: any) => fetchJSON<any>('/api/drrt/relationship', {
     method: 'POST',
     body: JSON.stringify(data),
   }),
+
   getFinancialHealth: () => fetchJSON<any>('/api/financial/health'),
   getFinancialHealthDetail: () => fetchJSON<any>('/api/financial/health/detail'),
+
   getBankingSummary: () => fetchJSON<any>('/api/banking/summary'),
+
   getComplianceSummary: () => fetchJSON<any>('/api/compliance/summary'),
+  getComplianceReport: () => fetchJSON<any>('/api/compliance/report'),
+  getVatReturns: () => fetchJSON<any[]>('/api/compliance/vat-returns'),
+  getTaxRecords: () => fetchJSON<any[]>('/api/compliance/tax-records'),
+  getComplianceTaxReserve: () => fetchJSON<any>('/api/compliance/tax-reserve'),
+
   getCashflowForecast: () => fetchJSON<any>('/api/cashflow/forecast'),
   getCashflowDetail: () => fetchJSON<any>('/api/cashflow/detail'),
   getTaxReserve: () => fetchJSON<any>('/api/cashflow/tax-reserve'),
 
   getInvestecStatus: () => fetchJSON<any>('/api/investec/status'),
-  getInvestecAccounts: () => fetchJSON<any>('/api/investec/accounts'),
-  getInvestecAuthUrl: () => fetchJSON<any>('/api/investec/auth-url'),
+  getInvestecAccounts: () => fetchJSON<any[]>('/api/investec/accounts'),
+  getInvestecAuthUrl: () => fetchJSON<{ url: string; state: string }>('/api/investec/auth-url'),
   getInvestecTransactions: (accountId: string) =>
-    fetchJSON<any>(`/api/investec/accounts/${accountId}/transactions`),
+    fetchJSON<any[]>(`/api/investec/accounts/${accountId}/transactions`),
 
   getTransactionIntelligence: () => fetchJSON<any>('/api/transactions/intelligence'),
-  getTransactionCategories: () => fetchJSON<any>('/api/transactions/categories'),
+  getTransactionCategories: () => fetchJSON<any[]>('/api/transactions/categories'),
   getTransactionPatterns: () => fetchJSON<any>('/api/transactions/patterns'),
   getTransactionAnomalies: () => fetchJSON<any>('/api/transactions/anomalies'),
-
-  getComplianceReport: () => fetchJSON<any>('/api/compliance/report'),
-  getVatReturns: () => fetchJSON<any>('/api/compliance/vat-returns'),
-  getTaxRecords: () => fetchJSON<any>('/api/compliance/tax-records'),
-  getComplianceTaxReserve: () => fetchJSON<any>('/api/compliance/tax-reserve'),
 
   getBankingRules: () => fetchJSON<any[]>('/api/banking/rules'),
   createBankingRule: (data: any) => fetchJSON<any>('/api/banking/rules', {

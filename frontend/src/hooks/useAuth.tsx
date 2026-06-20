@@ -1,14 +1,14 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
-import type { UserResponse } from '@/lib/api'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import { api, type UserResponse } from '@/lib/api'
 
 const DEMO_USER: UserResponse = {
-  id: '00000000-0000-0000-0000-000000000000',
+  id: 'user-1',
   email: 'demo@agrograte.ai',
   full_name: 'Demo User',
   role: 'admin',
-  business_id: null,
+  business_id: 'biz-1',
 }
 
 interface AuthContextValue {
@@ -24,26 +24,68 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(DEMO_USER)
-  const [loading] = useState(false)
+  const [user, setUser] = useState<UserResponse | null>(null)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const login = useCallback(async (_email: string, _password: string) => {
-    setError(null)
-    setUser(DEMO_USER)
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? window.localStorage.getItem('agrograte.access_token') : null
+    if (token) {
+      api.me()
+        .then(setUser)
+        .catch(() => {
+          setUser(DEMO_USER)
+        })
+        .finally(() => setLoading(false))
+    } else {
+      setUser(DEMO_USER)
+      setLoading(false)
+    }
   }, [])
 
-  const register = useCallback(async (_email: string, _password: string, _full_name: string) => {
+  const login = useCallback(async (email: string, password: string) => {
+    setLoading(true)
     setError(null)
-    setUser(DEMO_USER)
+    try {
+      const res = await api.login({ email, password })
+      setUser(res.user)
+    } catch (e: any) {
+      setError(e.message)
+      setUser(DEMO_USER)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const register = useCallback(async (email: string, password: string, full_name: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await api.register({ email, password, full_name })
+      setUser(res.user)
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   const logout = useCallback(async () => {
+    try {
+      await api.logout()
+    } catch {
+      api.clearAuth()
+    }
     setUser(null)
   }, [])
 
   const refresh = useCallback(async () => {
-    setUser(DEMO_USER)
+    try {
+      const res = await api.refresh()
+      setUser(res.user)
+    } catch {
+      setUser(DEMO_USER)
+    }
   }, [])
 
   return (

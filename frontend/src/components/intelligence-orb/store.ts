@@ -24,19 +24,3 @@ export const useOrbStore = create<OrbState>((set) => ({
   setExpanded: (v) => set({ expanded: v }),
   setAnomalyActive: (v) => set({ anomalyActive: v }),
 }))
-
-export function generateSimulatedMetrics(): OrbState['metrics'] {
-  const jitter = (base: number, range: number) =>
-    Math.max(0, Math.min(1, base + (Math.random() - 0.5) * range))
-
-  return {
-    cashflowHealth: jitter(0.85, 0.12),
-    taxLiability: jitter(0.35, 0.15),
-    complianceScore: jitter(0.94, 0.06),
-    forecastConfidence: jitter(0.78, 0.14),
-    transactionVelocity: jitter(0.62, 0.2),
-    riskLevel: jitter(0.12, 0.08),
-    revenueMomentum: jitter(0.71, 0.1),
-    expenseRatio: jitter(0.45, 0.1),
-  }
-}
