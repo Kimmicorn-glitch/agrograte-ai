@@ -3,6 +3,16 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { api, type UserResponse } from '@/lib/api'
 
+const DEMO_MODE = typeof window !== 'undefined' && window.localStorage.getItem('agrograte.demo') === 'true'
+
+const DEMO_USER: UserResponse = {
+  id: '00000000-0000-0000-0000-000000000000',
+  email: 'demo@agrograte.ai',
+  full_name: 'Demo User',
+  role: 'admin',
+  business_id: null,
+}
+
 interface AuthContextValue {
   user: UserResponse | null
   loading: boolean
@@ -16,8 +26,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<UserResponse | null>(DEMO_MODE ? DEMO_USER : null)
+  const [loading, setLoading] = useState(!DEMO_MODE)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
@@ -31,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    if (DEMO_MODE) return
     const token = typeof window !== 'undefined' && window.localStorage.getItem('agrograte.access_token')
     if (!token) {
       setLoading(false)
@@ -65,7 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(async () => {
-    await api.logout()
+    try {
+      await api.logout()
+    } catch {
+      // ignore
+    }
     setUser(null)
   }, [])
 

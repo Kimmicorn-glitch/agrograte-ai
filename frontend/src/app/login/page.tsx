@@ -124,6 +124,28 @@ export default function LoginPage() {
             {isRegister ? 'Sign in' : 'Register'}
           </button>
         </p>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-black px-2 text-white/30 font-mono">or</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem('agrograte.demo', 'true')
+            }
+            window.location.href = '/dashboard'
+          }}
+          className="w-full py-2 border border-white/10 hover:bg-white/5 rounded text-sm font-mono text-white/60 hover:text-white transition-colors"
+        >
+          Continue as Demo
+        </button>
       </div>
     </div>
   )
