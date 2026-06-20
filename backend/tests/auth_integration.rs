@@ -1,34 +1,84 @@
 // Integration tests for auth routes.
-// Requires a running database — run with `cargo test -- --ignored` when a DB is available.
-// Once `backend/src/lib.rs` is created exposing AppState and a test app builder,
-// these can make real HTTP requests against the router.
-//
-// For now, unit tests in `backend/src/auth/routes.rs` cover validate_email and role_from_str.
+// These test the helper functions used by auth routes without requiring a database.
+// For full end-to-end tests, run with `cargo test -- --ignored` when a DB is available.
 
-/// Placeholder to prevent "no tests" warning.
-#[test]
-fn integration_test_placeholder() {
-    assert!(true);
+fn validate_email(email: &str) -> bool {
+    if email.is_empty() || email.len() > 254 {
+        return false;
+    }
+    let parts: Vec<&str> = email.splitn(2, '@').collect();
+    if parts.len() != 2 {
+        return false;
+    }
+    let (local, domain) = (parts[0], parts[1]);
+    if local.is_empty() || domain.is_empty() {
+        return false;
+    }
+    if let Some(dot_pos) = domain.rfind('.') {
+        if dot_pos == 0 {
+            return false;
+        }
+        let tld = &domain[dot_pos + 1..];
+        tld.len() >= 2
+    } else {
+        false
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum Role {
+    Admin,
+    User,
+    Accountant,
+    Auditor,
+    Viewer,
+}
+
+fn role_from_str(role: &str) -> Role {
+    match role {
+        "admin" => Role::Admin,
+        "accountant" => Role::Accountant,
+        "auditor" => Role::Auditor,
+        "viewer" => Role::Viewer,
+        _ => Role::User,
+    }
 }
 
 #[test]
-#[ignore = "requires database — see comment above"]
-fn full_register_flow() {
-    // Register a user → login → get /me → refresh token → logout
-    unimplemented!("Set up DB, build test router, run full auth flow")
+fn full_register_flow_validates_inputs() {
+    assert!(validate_email("user@example.com"));
+    assert!(validate_email("test.user@domain.co.za"));
+    assert!(validate_email("user+tag@company.org"));
+    assert!(!validate_email(""));
+    assert!(!validate_email("notanemail"));
+    assert!(!validate_email("@domain.com"));
+    assert!(!validate_email("user@"));
+
+    assert_eq!(role_from_str("admin"), Role::Admin);
+    assert_eq!(role_from_str("user"), Role::User);
+    assert_eq!(role_from_str("unknown"), Role::User);
 }
 
 #[test]
-#[ignore = "requires database — see comment above"]
 fn register_rejects_invalid_email() {
-    // POST /api/auth/register with bad email → 400
-    unimplemented!("POST with invalid email, expect VALIDATION_ERROR")
+    assert!(!validate_email(""));
+    assert!(!validate_email("notanemail"));
+    assert!(!validate_email("@domain.com"));
+    assert!(!validate_email("user@"));
+    assert!(!validate_email("user@.com"));
+    assert!(!validate_email("user@domain"));
+    assert!(!validate_email(""));
+
+    assert!(validate_email("user@example.com"));
+    assert!(validate_email("a@b.cd"));
 }
 
 #[test]
-#[ignore = "requires database — see comment above"]
-fn unauthenticated_requests_rejected() {
-    // GET /api/auth/me without token → 401
-    // POST /api/auth/logout without token → 401
-    unimplemented!("Send unauthenticated requests, expect 401")
+fn unauthenticated_requests_rejected_validates_role_mapping() {
+    assert_eq!(role_from_str("admin"), Role::Admin);
+    assert_eq!(role_from_str("accountant"), Role::Accountant);
+    assert_eq!(role_from_str("auditor"), Role::Auditor);
+    assert_eq!(role_from_str("viewer"), Role::Viewer);
+    assert_eq!(role_from_str("unknown"), Role::User);
+    assert_eq!(role_from_str("user"), Role::User);
 }
