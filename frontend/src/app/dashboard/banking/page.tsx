@@ -8,6 +8,7 @@ import { api } from '@/lib/api'
 
 export default function BankingPage() {
   const [banking, setBanking] = useState<any>(null)
+  const [accounts, setAccounts] = useState<any[]>([])
   const [transactions, setTransactions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -16,12 +17,14 @@ export default function BankingPage() {
     let mounted = true
     const fetchData = async () => {
       try {
-        const [b, t] = await Promise.all([
+        const [b, a, t] = await Promise.all([
           api.getBankingSummary().catch(() => null),
+          api.getBankingAccounts().catch(() => []),
           api.getTransactionIntelligence().catch(() => null),
         ])
         if (!mounted) return
         if (b) setBanking(b)
+        setAccounts(Array.isArray(a) ? a : [])
         if (t) setTransactions(t.top_merchants || [])
       } catch (e: any) {
         if (mounted) setError(e.message)
@@ -33,12 +36,8 @@ export default function BankingPage() {
     return () => { mounted = false }
   }, [])
 
-  const accounts = banking?.accounts || [
-    { account_name: 'Investec Business Account', account_number: '****4521', available_balance: banking?.available_balance || 1842530 },
-    { account_name: 'Investec Savings Account', account_number: '****7893', available_balance: 650000 },
-  ]
-
-  const trend = (balance: number) => balance > 1000000 ? { change: '+2.3%', trend: 'up' as const } : { change: '+5.1%', trend: 'up' as const }
+  const trend = (balance: number) =>
+    balance > 0 ? { change: 'Live balance', trend: 'up' as const } : { change: 'No balance data', trend: 'neutral' as const }
 
   if (loading) {
     return (
@@ -78,7 +77,7 @@ export default function BankingPage() {
 
       <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {accounts.map((a: any) => {
-          const t = trend(a.available_balance || 0)
+          const t = trend(a.available_balance ?? 0)
           return (
             <div key={a.account_number || a.account_id} className="card card-hover">
               <div className="flex items-center justify-between mb-4">
@@ -89,12 +88,17 @@ export default function BankingPage() {
                 </span>
               </div>
               <p className="metric-value text-heading-xl text-secondary mb-1">
-                R {(a.available_balance || 0).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                {a.available_balance == null ? '—' : `R ${a.available_balance.toLocaleString('en-ZA', { minimumFractionDigits: 2 })}`}
               </p>
-              <p className="text-caption text-charcoal-400">{a.account_number}</p>
+              <p className="text-caption text-charcoal-400">{a.account_number || a.account_id}</p>
             </div>
           )
         })}
+        {accounts.length === 0 && (
+          <div className="card border-dashed border-charcoal-200 text-charcoal-500">
+            No bank accounts linked. Connect Investec to load live balances.
+          </div>
+        )}
       </motion.div>
 
       <motion.div variants={fadeInUp} className="card">
