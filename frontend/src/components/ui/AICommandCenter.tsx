@@ -20,7 +20,7 @@ export default function AICommandCenter() {
     <div className="bg-white rounded-xl p-4 shadow-elevated max-w-3xl">
       <div className="h-64 overflow-y-auto p-2 space-y-3">
         {messages.length === 0 ? (
-          <div className="text-body-sm text-secondary/60">Ask the AI: "What taxes are due?"</div>
+          <div className="text-body-sm text-secondary/60">Ask the AI: &ldquo;What taxes are due?&rdquo;</div>
         ) : (
           messages.map((m) => (
             <div key={m.id} className={`p-3 rounded-lg ${m.role === 'user' ? 'bg-primary-off text-secondary' : 'bg-charcoal-50 text-secondary'}`}>
