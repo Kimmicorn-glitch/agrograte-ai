@@ -21,7 +21,7 @@ import {
 import { SITE_NAME } from '@/lib/constants'
 import { overlayAnimation } from '@/lib/motion'
 
-const SIDEBAR_WIDTH = 280
+const SIDEBAR_WIDTH = 320
 
 const navSections = [
   {
@@ -105,14 +105,14 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
   const sidebarContent = (
     <>
       {/* Logo & Branding */}
-      <div className="px-5 py-5 border-b border-charcoal-200/40 flex items-center">
+      <div className="px-5 py-5 border-b border-white/5 flex items-center">
         <Link href="/dashboard" onClick={isDesktop ? undefined : close} className="flex items-center gap-3 flex-1">
-          <div className="w-2.5 h-2.5 rounded-full bg-accent shadow-accent shrink-0" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#6366f1] shadow-lg shrink-0" />
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold text-heading-md text-secondary leading-tight truncate">
+            <h1 className="font-bold text-base text-white leading-tight truncate">
               {SITE_NAME}
             </h1>
-            <p className="text-caption text-charcoal-500 font-medium mt-0.5 truncate">
+            <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">
               Financial OS
             </p>
           </div>
@@ -120,10 +120,10 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Navigation Sections */}
-      <nav className="flex-1 overflow-y-auto py-5 px-2 space-y-6">
+      <nav className="flex-1 overflow-y-auto py-5 px-2 space-y-5">
         {navSections.map((section) => (
           <div key={section.label} className="space-y-1">
-            <h3 className="px-3 py-1 text-overline text-charcoal-500 font-semibold tracking-widest">
+            <h3 className="px-3 py-1 text-[10px] text-slate-500 font-semibold tracking-widest uppercase">
               {section.label}
             </h3>
             <div className="space-y-0.5">
@@ -137,22 +137,22 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
                     onClick={isDesktop ? undefined : close}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
                       active
-                        ? 'bg-accent-subtle text-accent font-semibold'
-                        : 'text-charcoal-700 hover:text-secondary hover:bg-charcoal-50/50'
+                        ? 'bg-[#6366f1]/10 text-[#818cf8] font-semibold'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
                   >
                     {active && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-accent rounded-r-md" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#6366f1] rounded-r-md" />
                     )}
                     <Icon
                       size={18}
                       className={`shrink-0 transition-colors ${
                         active
-                          ? 'text-accent'
-                          : 'text-charcoal-500 group-hover:text-charcoal-700'
+                          ? 'text-[#818cf8]'
+                          : 'text-slate-500 group-hover:text-slate-300'
                       }`}
                     />
-                    <span className="text-body-sm truncate">
+                    <span className="text-sm truncate">
                       {item.label}
                     </span>
                   </Link>
@@ -164,15 +164,15 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Footer Status */}
-      <div className="p-4 border-t border-charcoal-200/40 bg-charcoal-50/50">
-        <div className="rounded-lg bg-white border border-charcoal-200/40 p-3 space-y-2">
+      <div className="p-4 border-t border-white/5 bg-slate-900/50">
+        <div className="rounded-lg bg-slate-800/50 border border-white/5 p-3 space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-success-DEFAULT animate-pulse" />
-            <span className="text-caption font-medium text-charcoal-700">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-medium text-emerald-400">
               System Online
             </span>
           </div>
-          <p className="text-caption text-charcoal-600">
+          <p className="text-[10px] text-slate-500">
             Investec Connected &middot; Live
           </p>
         </div>
@@ -181,21 +181,21 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-950">
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setMobileOpen((v) => !v)}
         aria-label={mobileOpen ? 'Close sidebar' : 'Open sidebar'}
-        className="fixed top-4 left-4 z-50 p-2.5 bg-white border border-charcoal-200 rounded-lg shadow-sm lg:hidden hover:bg-charcoal-50 transition-colors"
+        className="fixed top-4 left-4 z-50 p-2.5 bg-slate-900 border border-white/10 rounded-lg shadow-sm lg:hidden hover:bg-slate-800 transition-colors"
       >
-        {mobileOpen ? <X size={18} className="text-charcoal-700" /> : <Menu size={18} className="text-charcoal-700" />}
+        {mobileOpen ? <X size={18} className="text-slate-400" /> : <Menu size={18} className="text-slate-400" />}
       </button>
 
       {/* Desktop sidebar - always visible, persistent */}
       {isDesktop && (
         <aside
           style={{ width: SIDEBAR_WIDTH }}
-          className="fixed left-0 top-0 h-screen bg-white/95 backdrop-blur-glass border-r border-charcoal-200/40 z-40 flex flex-col shadow-sidebar overflow-y-auto"
+          className="fixed left-0 top-0 h-screen bg-slate-900/95 backdrop-blur-xl border-r border-white/5 z-40 flex flex-col shadow-xl overflow-y-auto"
         >
           {sidebarContent}
         </aside>
@@ -210,7 +210,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed inset-0 bg-black/30 z-30"
+            className="fixed inset-0 bg-black/50 z-30"
             onClick={close}
             aria-hidden="true"
           />
@@ -227,7 +227,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
             style={{ width: SIDEBAR_WIDTH }}
-            className="fixed left-0 top-0 h-screen bg-white/95 backdrop-blur-glass border-r border-charcoal-200/40 z-40 flex flex-col shadow-sidebar"
+            className="fixed left-0 top-0 h-screen bg-slate-900/95 backdrop-blur-xl border-r border-white/5 z-40 flex flex-col shadow-xl"
           >
             {sidebarContent}
           </motion.aside>
@@ -237,7 +237,7 @@ export function Sidebar({ children }: { children: React.ReactNode }) {
       {/* Main content area */}
       <main
         style={{ marginLeft: isDesktop ? SIDEBAR_WIDTH : 0 }}
-        className="min-h-screen bg-white transition-all duration-300"
+        className="min-h-screen bg-slate-950 transition-all duration-300"
       >
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
           {children}
