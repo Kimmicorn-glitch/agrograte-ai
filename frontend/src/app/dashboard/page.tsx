@@ -148,15 +148,15 @@ export default function DashboardHome() {
       <MotionDiv variants={fadeInUp}>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl text-white font-bold">Executive Dashboard</h1>
-            <p className="text-sm text-slate-400 mt-1">Real-time financial intelligence and compliance monitoring</p>
+            <h1 className="text-2xl sm:text-3xl text-secondary font-bold">Executive Dashboard</h1>
+            <p className="text-body-md text-charcoal-500 mt-1">Real-time financial intelligence and compliance monitoring</p>
           </div>
           <div className="text-left sm:text-right shrink-0">
-            <div className="flex items-center gap-2 text-emerald-400 text-sm font-medium">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <div className="flex items-center gap-2 text-success font-medium text-body-sm">
+              <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
               Live Data
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">Last updated now</p>
+            <p className="text-caption text-charcoal-400 mt-0.5">Last updated now</p>
           </div>
         </div>
       </MotionDiv>
@@ -171,14 +171,14 @@ export default function DashboardHome() {
       {/* Financial Neural Twin */}
       <ErrorBoundary>
         <MotionDiv variants={fadeInUp}>
-          <div className="bg-slate-900 rounded-xl border border-white/10 overflow-hidden">
-            <div className="p-4 sm:p-5 lg:p-6 border-b border-white/5 flex items-center justify-between">
+          <div className="card overflow-hidden">
+            <div className="p-4 sm:p-5 lg:p-6 border-b border-charcoal-200/40 flex items-center justify-between">
               <div>
-                <h2 className="text-lg text-white font-semibold">Financial Neural Twin</h2>
-                <p className="text-sm text-slate-400 mt-0.5">Interactive knowledge graph of your financial ecosystem</p>
+                <h2 className="text-heading-md text-secondary font-semibold">Financial Neural Twin</h2>
+                <p className="text-body-sm text-charcoal-500 mt-0.5">Interactive knowledge graph of your financial ecosystem</p>
               </div>
-              <div className="hidden sm:flex items-center gap-3 text-xs text-slate-500">
-                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Accounts</span>
+              <div className="hidden sm:flex items-center gap-3 text-caption text-charcoal-500">
+                <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success-DEFAULT" /> Accounts</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500" /> Clusters</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" /> Merchants</span>
                 <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> Risks</span>
@@ -204,23 +204,23 @@ export default function DashboardHome() {
           )}
 
           {/* Cash Flow Analytics */}
-          <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
+          <div className="card p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
               <div>
-                <h3 className="text-sm text-white font-semibold">Cash Flow Analytics</h3>
-                <p className="text-xs text-slate-400 mt-0.5">30-day forecast and scenario analysis</p>
+                <h3 className="text-body-sm text-secondary font-semibold">Cash Flow Analytics</h3>
+                <p className="text-caption text-charcoal-500 mt-0.5">30-day forecast and scenario analysis</p>
               </div>
               {cashflow && (
                 <div className="flex items-center gap-4 text-right">
                   <div>
-                    <p className="text-[10px] text-slate-500">Monthly Inflow</p>
-                    <p className="text-sm text-emerald-400 font-semibold font-mono">
+                    <p className="text-caption text-charcoal-500">Monthly Inflow</p>
+                    <p className="text-body-sm text-success font-semibold font-mono">
                       {formatMoney((cashflow.avg_daily_inflow ?? 0) * 30)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-500">Monthly Outflow</p>
-                    <p className="text-sm text-red-400 font-semibold font-mono">
+                    <p className="text-caption text-charcoal-500">Monthly Outflow</p>
+                    <p className="text-body-sm text-error font-semibold font-mono">
                       {formatMoney((cashflow.avg_daily_outflow ?? 0) * 30)}
                     </p>
                   </div>
@@ -228,21 +228,21 @@ export default function DashboardHome() {
               )}
             </div>
             {cashflow?.scenarios?.length ? (
-              <div className="h-48 flex items-end justify-between gap-1 p-3 rounded-lg bg-slate-900/50">
+              <div className="h-48 flex items-end justify-between gap-1 p-3 rounded-lg bg-charcoal-50/50">
                 {cashflow.scenarios.map((scenario: any, i: number) => {
                   const allBalances = cashflow.scenarios.map((x: any) => Math.abs(x.projected_balance))
                   const maxBalance = Math.max(...allBalances, 1)
                   const heightPct = (Math.abs(scenario.projected_balance) / maxBalance) * 100
-                  const colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444']
+                  const colors = ['#059669', '#2563eb', '#d97706', '#dc2626']
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1 group min-w-0">
-                      <div className="text-[10px] font-medium text-slate-500 truncate max-w-full">
+                      <div className="text-caption font-medium text-charcoal-600 truncate max-w-full">
                         {scenario.scenario_type}
                       </div>
                       <div className="w-full flex-1 rounded-t-lg transition-all duration-300 group-hover:opacity-80"
                         style={{ height: `${Math.max(heightPct, 10)}%`, backgroundColor: colors[i] }}
                       />
-                      <div className="text-[10px] text-slate-400 font-medium">
+                      <div className="text-caption text-charcoal-500 font-medium">
                         {formatMoney(scenario.projected_balance).replace('R ', '')}
                       </div>
                     </div>
@@ -250,7 +250,7 @@ export default function DashboardHome() {
                 })}
               </div>
             ) : (
-              <div className="h-48 flex items-center justify-center text-xs text-slate-500">No forecast data available</div>
+              <div className="h-48 flex items-center justify-center text-body-sm text-charcoal-500">No forecast data available</div>
             )}
           </div>
         </MotionDiv>
@@ -261,27 +261,27 @@ export default function DashboardHome() {
           <InsightFeed />
 
           {/* Compliance Status */}
-          <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
-            <h3 className="text-sm text-white font-semibold mb-3">Compliance Status</h3>
+          <div className="card p-4">
+            <h3 className="text-body-sm text-secondary font-semibold mb-3">Compliance Status</h3>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">SARS Compliance</span>
-                <span className={`text-xs font-semibold ${complianceScore && complianceScore >= 80 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                <span className="text-caption text-charcoal-600">SARS Compliance</span>
+                <span className={`text-caption font-semibold ${complianceScore && complianceScore >= 80 ? 'text-success' : 'text-warning'}`}>
                   {complianceScore ? `${complianceScore}%` : '—'}
                 </span>
               </div>
-              <div className="w-full h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-charcoal-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#6366f1] to-[#8b5cf6] transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-accent to-accent-hover transition-all duration-300"
                   style={{ width: `${complianceScore || 0}%` }}
                 />
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-caption text-charcoal-500 mt-1">
                 VAT: {compliance?.vat_compliant ? 'Compliant' : compliance?.vat_compliant === null ? 'No data' : 'Action needed'}
               </p>
             </div>
-            <div className="mt-3 pt-3 border-t border-white/5">
-              <p className="text-[10px] text-slate-600">Updated {new Date().toLocaleString('en-ZA', { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
+            <div className="mt-3 pt-3 border-t border-charcoal-100">
+              <p className="text-caption text-charcoal-400">Updated {new Date().toLocaleString('en-ZA', { hour: '2-digit', minute: '2-digit', hour12: false })}</p>
             </div>
           </div>
         </MotionDiv>
@@ -290,21 +290,21 @@ export default function DashboardHome() {
       {/* Top Merchants */}
       <ErrorBoundary>
         <MotionDiv variants={fadeInUp}>
-          <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
-            <h3 className="text-sm text-white font-semibold mb-3">Top Merchants</h3>
+          <div className="card p-4">
+            <h3 className="text-body-sm text-secondary font-semibold mb-3">Top Merchants</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {topMerchants.length > 0 ? (
                 topMerchants.map((merchant, i) => (
-                  <div key={i} className="bg-slate-900/50 border border-white/5 rounded-lg p-3">
-                    <p className="text-xs text-white font-medium truncate mb-1">{merchant.name}</p>
-                    <p className="text-[10px] text-slate-500">{merchant.count} transactions</p>
-                    <p className={`text-xs font-semibold mt-1 font-mono ${merchant.amount > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <div key={i} className="bg-charcoal-50/50 border border-charcoal-200/40 rounded-lg p-3">
+                    <p className="text-body-sm text-secondary font-medium truncate mb-1">{merchant.name}</p>
+                    <p className="text-caption text-charcoal-500">{merchant.count} transactions</p>
+                    <p className={`text-caption font-semibold mt-1 font-mono ${merchant.amount > 0 ? 'text-success' : 'text-error'}`}>
                       {merchant.amount > 0 ? '+' : ''}{formatMoney(merchant.amount).replace('R ', '')}
                     </p>
                   </div>
                 ))
               ) : (
-                <div className="col-span-full text-center py-6 text-slate-500 text-xs">No transaction data available</div>
+                <div className="col-span-full text-center py-6 text-charcoal-500 text-body-sm">No transaction data available</div>
               )}
             </div>
           </div>
@@ -314,13 +314,13 @@ export default function DashboardHome() {
       {/* AI Command Center */}
       <ErrorBoundary>
         <MotionDiv variants={fadeInUp}>
-          <div className="bg-slate-800/30 border border-white/5 rounded-xl overflow-hidden">
-            <div className="p-4 border-b border-white/5">
+          <div className="card overflow-hidden">
+            <div className="p-4 border-b border-charcoal-200/40">
               <div className="flex items-center gap-2">
-                <RefreshCw size={16} className="text-[#8b5cf6] shrink-0" />
-                <h2 className="text-sm text-white font-semibold">AI Command Center</h2>
+                <RefreshCw size={16} className="text-accent shrink-0" />
+                <h2 className="text-body-sm text-secondary font-semibold">AI Command Center</h2>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">Chat with Agrograte AI for insights and recommendations</p>
+              <p className="text-caption text-charcoal-500 mt-0.5">Chat with Agrograte AI for insights and recommendations</p>
             </div>
             <div className="p-4">
               <AICommandCenter />

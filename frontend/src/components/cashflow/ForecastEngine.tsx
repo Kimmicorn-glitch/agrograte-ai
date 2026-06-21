@@ -5,13 +5,12 @@ import { useCallback, useMemo } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
 
 function SliderControl({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number }) {
-  const pct = ((value - min) / (max - min)) * 100
-  const color = value >= 0 ? '#22c55e' : '#ef4444'
+  const color = value >= 0 ? '#059669' : '#dc2626'
 
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span className="text-slate-400">{label}</span>
+      <div className="flex justify-between text-body-sm">
+        <span className="text-charcoal-600">{label}</span>
         <span className="font-mono" style={{ color }}>{value >= 0 ? '+' : ''}{value}%</span>
       </div>
       <input
@@ -21,7 +20,7 @@ function SliderControl({ label, value, onChange, min, max, step }: { label: stri
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-[#6366f1]"
+        className="w-full h-1.5 bg-charcoal-200 rounded-full appearance-none cursor-pointer accent-accent"
       />
     </div>
   )
@@ -51,52 +50,52 @@ export function ForecastEngine() {
   return (
     <div className="space-y-4">
       {/* Chart */}
-      <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
+      <div className="card p-4">
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
             <defs>
               <linearGradient id="projectedGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                <stop offset="5%" stopColor="#C1121F" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#C1121F" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="confUpperGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.08} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                <stop offset="5%" stopColor="#C1121F" stopOpacity={0.06} />
+                <stop offset="95%" stopColor="#C1121F" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-            <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `R${(v / 1000).toFixed(0)}k`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E9ECEF" />
+            <XAxis dataKey="date" tick={{ fill: '#6C757D', fontSize: 10 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: '#6C757D', fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `R${(v / 1000).toFixed(0)}k`} />
             <Tooltip
-              contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', fontSize: '12px' }}
-              labelStyle={{ color: '#94a3b8' }}
+              contentStyle={{ background: '#FFFFFF', border: '1px solid #DEE2E6', borderRadius: '8px', fontSize: '12px' }}
+              labelStyle={{ color: '#6C757D' }}
               formatter={(value: any) => typeof value === 'number' ? [`R${value.toLocaleString()}`, undefined] : [value, undefined]}
             />
-            <Legend wrapperStyle={{ fontSize: '11px', color: '#94a3b8' }} />
-            <Area type="monotone" dataKey="actual" stroke="#22c55e" strokeWidth={2} fill="none" name="Actual" dot={false} />
-            <Area type="monotone" dataKey="projected" stroke="#6366f1" strokeWidth={2} fill="url(#projectedGrad)" name="Projected" dot={false} />
-            <Area type="monotone" dataKey="confidenceUpper" stroke="#6366f1" strokeWidth={0} fill="url(#confUpperGrad)" name="Confidence Band" dot={false} />
-            <Area type="monotone" dataKey="confidenceLower" stroke="#6366f1" strokeWidth={0} fill="none" dot={false} />
+            <Legend wrapperStyle={{ fontSize: '11px', color: '#6C757D' }} />
+            <Area type="monotone" dataKey="actual" stroke="#059669" strokeWidth={2} fill="none" name="Actual" dot={false} />
+            <Area type="monotone" dataKey="projected" stroke="#C1121F" strokeWidth={2} fill="url(#projectedGrad)" name="Projected" dot={false} />
+            <Area type="monotone" dataKey="confidenceUpper" stroke="#C1121F" strokeWidth={0} fill="url(#confUpperGrad)" name="Confidence Band" dot={false} />
+            <Area type="monotone" dataKey="confidenceLower" stroke="#C1121F" strokeWidth={0} fill="none" dot={false} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-800/30 border border-white/5 rounded-xl p-4">
-        <div className="text-xs text-slate-500 uppercase tracking-wider mb-3">Scenario Controls</div>
+      <div className="card p-4">
+        <div className="text-caption text-charcoal-500 uppercase tracking-wider mb-3">Scenario Controls</div>
         <div className="grid grid-cols-2 gap-4">
           <SliderControl label="Revenue Growth" value={forecastParams.revenueGrowth} onChange={(v) => updateForecastParam('revenueGrowth', v)} min={-20} max={30} step={1} />
           <SliderControl label="Expense Growth" value={forecastParams.expenseGrowth} onChange={(v) => updateForecastParam('expenseGrowth', v)} min={-20} max={30} step={1} />
           <SliderControl label="Tax Impact" value={forecastParams.taxImpact} onChange={(v) => updateForecastParam('taxImpact', v)} min={-15} max={15} step={1} />
           <SliderControl label="Risk Weighting" value={forecastParams.riskWeighting} onChange={(v) => updateForecastParam('riskWeighting', v)} min={0} max={30} step={1} />
         </div>
-        <div className="flex justify-between mt-4 pt-3 border-t border-white/5">
-          <div className="text-xs text-slate-400">
-            <span className="text-slate-500">Starting:</span> R{startBal.toLocaleString()}
+        <div className="flex justify-between mt-4 pt-3 border-t border-charcoal-100">
+          <div className="text-body-sm text-charcoal-600">
+            <span className="text-charcoal-500">Starting:</span> R{startBal.toLocaleString()}
           </div>
-          <div className="text-xs">
-            <span className="text-slate-500">Projected:</span>{' '}
-            <span className={netChange >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+          <div className="text-body-sm">
+            <span className="text-charcoal-500">Projected:</span>{' '}
+            <span className={netChange >= 0 ? 'text-success' : 'text-error'}>
               R{projectionEnd.toLocaleString()} ({netChange >= 0 ? '+' : ''}{netChange.toLocaleString()})
             </span>
           </div>
@@ -119,13 +118,13 @@ function ScenarioCards() {
       {scenarios.map((s) => {
         const projected = baseProjection * s.inflowMultiplier / (s.outflowMultiplier || 1)
         return (
-          <div key={s.name} className="bg-slate-800/30 border border-white/5 rounded-xl p-3">
+          <div key={s.name} className="card p-3">
             <div className="flex items-center gap-2 mb-1.5">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-              <span className="text-xs text-white font-medium">{s.label}</span>
+              <span className="text-body-sm text-secondary font-medium">{s.label}</span>
             </div>
             <div className="text-lg font-bold font-mono" style={{ color: s.color }}>R{(projected / 1e6).toFixed(1)}M</div>
-            <div className="text-[10px] text-slate-500">{(s.probability * 100).toFixed(0)}% probability</div>
+            <div className="text-caption text-charcoal-500">{(s.probability * 100).toFixed(0)}% probability</div>
           </div>
         )
       })}

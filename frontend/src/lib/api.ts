@@ -198,4 +198,9 @@ export const api = {
     const qs = search.toString()
     return fetchJSON<any[]>(`/api/audit/logs${qs ? `?${qs}` : ''}`)
   },
+
+  post: (path: string, data: any) => fetchJSON<any>(path, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
 }

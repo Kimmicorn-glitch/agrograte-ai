@@ -12,15 +12,15 @@ const TYPE_ICONS: Record<string, string> = {
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
-  high: 'border-red-500/30 bg-red-500/5',
-  medium: 'border-amber-500/30 bg-amber-500/5',
-  low: 'border-emerald-500/30 bg-emerald-500/5',
+  high: 'border-error/30 bg-error-subtle',
+  medium: 'border-warning/30 bg-warning-subtle',
+  low: 'border-success/30 bg-success-subtle',
 }
 
 const SEVERITY_BADGE: Record<string, string> = {
-  high: 'bg-red-500/20 text-red-300',
-  medium: 'bg-amber-500/20 text-amber-300',
-  low: 'bg-emerald-500/20 text-emerald-300',
+  high: 'bg-error/10 text-error',
+  medium: 'bg-warning/10 text-warning',
+  low: 'bg-success/10 text-success',
 }
 
 export function InsightCard({ insight }: { insight: StoryInsight }) {
@@ -30,12 +30,12 @@ export function InsightCard({ insight }: { insight: StoryInsight }) {
         <span className="text-lg mt-0.5">{TYPE_ICONS[insight.type] || '📌'}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-sm font-medium text-white">{insight.title}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${SEVERITY_BADGE[insight.severity]}`}>
+            <span className="text-body-sm font-medium text-secondary">{insight.title}</span>
+            <span className={`text-caption px-1.5 py-0.5 rounded-full font-medium ${SEVERITY_BADGE[insight.severity]}`}>
               {insight.severity}
             </span>
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">{insight.body}</p>
+          <p className="text-body-sm text-charcoal-600 leading-relaxed">{insight.body}</p>
         </div>
       </div>
     </div>
@@ -49,7 +49,7 @@ export function InsightFeed() {
 
   return (
     <div className="space-y-2">
-      <div className="text-xs text-slate-500 uppercase tracking-wider font-medium mb-3">What&apos;s happening</div>
+      <div className="text-caption text-charcoal-500 uppercase tracking-wider font-medium mb-3">What&apos;s happening</div>
       {insights.map((insight) => (
         <InsightCard key={insight.id} insight={insight} />
       ))}

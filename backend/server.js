@@ -710,6 +710,66 @@ app.get('/api/audit/logs', (req, res) => {
 })
 
 // ---------------------------------------------------------------------------
+// AI Chat — proxies to Hugging Face free Inference API (Mistral 7B)
+// No API key required for basic rate-limited access.
+// Set HF_API_TOKEN env var for higher rate limits.
+// ---------------------------------------------------------------------------
+const AI_MODEL = process.env.AI_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2'
+
+app.post('/api/ai/chat', express.json(), async (req, res) => {
+  const { messages } = req.body || {}
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'messages array required' })
+  }
+
+  try {
+    const token = process.env.HF_API_TOKEN || process.env.AI_API_KEY
+    const headers = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    // Build a prompt for instruction-tuned models
+    const systemMsg = 'You are Agrograte AI, a financial intelligence assistant for South African business owners. Answer concisely and use plain language.'
+    let prompt = `<|system|>\n${systemMsg}\n</s>\n`
+    for (const m of messages.slice(-10)) {
+      if (m.role === 'user') prompt += `<|user|>\n${m.content}\n</s>\n`
+      else prompt += `<|assistant|>\n${m.content}\n</s>\n`
+    }
+    prompt += `<|assistant|>\n`
+
+    const response = await fetch(`https://api-inference.huggingface.co/models/${AI_MODEL}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: { max_new_tokens: 512, temperature: 0.7, top_p: 0.95, do_sample: true },
+      }),
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      // Model might be loading — return a graceful fallback
+      log.warn('ai_chat_fallback', { status: response.status, detail: text.slice(0, 200) })
+      return res.json({
+        role: 'assistant',
+        content: 'I am currently warming up my language model. Ask me anything about your financial data — cash flow, compliance, transactions, or forecasts — and I will answer once ready.',
+      })
+    }
+
+    const data = await response.json()
+    const text = Array.isArray(data) ? (data[0]?.generated_text || '') : (data?.generated_text || '')
+    // Strip the input prompt from the generated text
+    const answer = text.replace(prompt, '').trim() || 'I could not generate a response. Please try rephrasing your question.'
+    res.json({ role: 'assistant', content: answer })
+  } catch (err) {
+    log.error('ai_chat_error', { error: err.message })
+    res.json({
+      role: 'assistant',
+      content: 'I encountered a connection issue. Please ensure the AI service is reachable and try again.',
+    })
+  }
+})
+
+// ---------------------------------------------------------------------------
 // Global error handler — last resort
 // ---------------------------------------------------------------------------
 app.use((err, req, res, next) => {
