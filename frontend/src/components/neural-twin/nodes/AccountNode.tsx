@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { useNeuralTwinStore } from '../store/graph-store'
 import type { GraphNode } from '../types'
 
-const BALANCE_TO_SIZE = (v: number) => Math.max(2, Math.min(8, Math.abs(v) / 500000))
+const BALANCE_TO_SIZE = (v: number) => Math.max(1.5, Math.min(4, Math.abs(v) / 500000))
 
 const HEALTH_COLORS: Record<string, string> = {
   healthy: '#22c55e',
@@ -39,18 +39,19 @@ export function AccountNode({ node }: { node: GraphNode }) {
         <sphereGeometry args={[size, 32, 32]} />
         <meshPhysicalMaterial
           color={color}
-          metalness={0.3}
-          roughness={0.4}
+          metalness={0.1}
+          roughness={0.3}
           transparent
-          opacity={0.9}
+          opacity={0.95}
           emissive={color}
-          emissiveIntensity={node.glow ? 0.3 : 0.1}
+          emissiveIntensity={node.glow ? 0.8 : 0.4}
+          toneMapped={false}
         />
       </mesh>
       {node.glow && (
         <mesh>
-          <sphereGeometry args={[size * 1.4, 16, 16]} />
-          <meshBasicMaterial color={color} transparent opacity={0.08} />
+          <sphereGeometry args={[size * 2, 16, 16]} />
+          <meshBasicMaterial color={color} transparent opacity={0.15} />
         </mesh>
       )}
       <Text

@@ -12,7 +12,7 @@ export function DrrtNode({ node }: { node: GraphNode }) {
   const innerRef = useRef<THREE.Mesh>(null)
   const { selectNode, hoverNode } = useNeuralTwinStore()
   const coherence = (node.metadata?.coherence as number) || 0.5
-  const size = 3 + coherence * 3
+  const size = 2 + coherence * 2
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -32,7 +32,7 @@ export function DrrtNode({ node }: { node: GraphNode }) {
       {/* Outer frame */}
       <mesh>
         <torusGeometry args={[size, 0.3, 16, 48]} />
-        <meshPhysicalMaterial color={color} metalness={0.5} roughness={0.3} transparent opacity={0.6} emissive={color} emissiveIntensity={0.2} />
+        <meshPhysicalMaterial color={color} metalness={0.1} roughness={0.2} transparent opacity={0.8} emissive={color} emissiveIntensity={0.7} toneMapped={false} />
       </mesh>
       {/* Inner sphere */}
       <mesh
@@ -42,7 +42,7 @@ export function DrrtNode({ node }: { node: GraphNode }) {
         onPointerOut={() => hoverNode(null)}
       >
         <sphereGeometry args={[size * 0.4, 24, 24]} />
-        <meshPhysicalMaterial color={color} metalness={0.3} roughness={0.4} emissive={color} emissiveIntensity={0.3} transparent opacity={0.8} />
+        <meshPhysicalMaterial color={color} metalness={0.1} roughness={0.3} emissive={color} emissiveIntensity={0.6} transparent opacity={0.9} toneMapped={false} />
       </mesh>
       {/* Orbital ring 2 */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>

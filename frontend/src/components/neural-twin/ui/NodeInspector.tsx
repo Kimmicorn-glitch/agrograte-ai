@@ -65,9 +65,9 @@ function NodeDetail({ node }: { node: GraphNode }) {
 
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between text-xs">
+    <div className="flex justify-between text-base">
       <span className="text-slate-400">{label}</span>
-      <span className="text-white font-medium">{value}</span>
+      <span className="text-white font-semibold">{value}</span>
     </div>
   )
 }
@@ -78,11 +78,11 @@ export function NodeInspector({ node, onClose }: { node: GraphNode; onClose: () 
 
   return (
     <Html distanceFactor={30} center>
-      <div className="bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl min-w-[380px] max-w-[480px] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl min-w-[450px] max-w-[550px] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-white/5">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: node.color }} />
-            <span className="text-white font-semibold text-sm capitalize">{node.type}</span>
+            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: node.color }} />
+            <span className="text-white font-bold text-lg capitalize">{node.type}</span>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors text-sm">✕</button>
         </div>

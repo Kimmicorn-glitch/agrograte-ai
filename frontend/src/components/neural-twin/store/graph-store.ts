@@ -66,10 +66,10 @@ export const useNeuralTwinStore = create<NeuralTwinStore>((set, get) => ({
     if (!nodes.length) return
 
     sim = forceSimulation(nodes as any)
-      .force('link', forceLink(edges as any).id((d: any) => d.id).distance(80).strength(0.3))
-      .force('charge', forceManyBody().strength(-200))
+      .force('link', forceLink(edges as any).id((d: any) => d.id).distance(25).strength(0.5))
+      .force('charge', forceManyBody().strength(-60))
       .force('center', forceCenter(0, 0))
-      .force('collide', forceCollide(20))
+      .force('collide', forceCollide(8))
 
     sim.on('tick', () => {
       set({ nodes: [...get().nodes] })

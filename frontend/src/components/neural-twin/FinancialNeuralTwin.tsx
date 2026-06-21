@@ -67,11 +67,12 @@ function GraphScene() {
 function SceneBackground() {
   return (
     <>
-      <color attach="background" args={['#0a0a1a']} />
-      <ambientLight intensity={0.3} />
-      <pointLight position={[10, 10, 10]} intensity={0.8} />
-      <pointLight position={[-10, -10, -10]} intensity={0.4} color="#4f46e5" />
-      <pointLight position={[0, 10, -10]} intensity={0.3} color="#06b6d4" />
+      <color attach="background" args={['#050510']} />
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1.2} />
+      <pointLight position={[-10, -10, -10]} intensity={0.6} color="#4f46e5" />
+      <pointLight position={[0, 10, -10]} intensity={0.5} color="#06b6d4" />
+      <fog attach="fog" args={['#050510', 80, 200]} />
     </>
   )
 }
@@ -79,16 +80,16 @@ function SceneBackground() {
 export function FinancialNeuralTwin() {
   return (
     <div className="w-full h-[700px] rounded-xl overflow-hidden border border-white/10 bg-[#0a0a1a]">
-      <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 120], fov: 60 }}>
-        <PerspectiveCamera makeDefault position={[0, 0, 120]} fov={60} />
+      <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 80], fov: 50 }}>
+        <PerspectiveCamera makeDefault position={[0, 0, 80]} fov={50} />
         <SceneBackground />
         <GraphScene />
         <OrbitControls
           enablePan={true}
           enableZoom={true}
           enableRotate={true}
-          minDistance={30}
-          maxDistance={300}
+          minDistance={20}
+          maxDistance={200}
           autoRotate={false}
         />
       </Canvas>

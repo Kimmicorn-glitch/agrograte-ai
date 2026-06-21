@@ -10,7 +10,7 @@ import type { GraphNode } from '../types'
 export function MerchantNode({ node }: { node: GraphNode }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const { selectNode, hoverNode } = useNeuralTwinStore()
-  const size = Math.max(1, Math.min(4, Math.abs(node.value) / 20000))
+  const size = Math.max(0.8, Math.min(2.5, Math.abs(node.value) / 20000))
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -28,7 +28,7 @@ export function MerchantNode({ node }: { node: GraphNode }) {
         onPointerOut={() => hoverNode(null)}
       >
         <boxGeometry args={[size * 1.5, size * 1.5, size * 1.5]} />
-        <meshPhysicalMaterial color={node.color || '#f97316'} metalness={0.4} roughness={0.3} transparent opacity={0.85} />
+        <meshPhysicalMaterial color={node.color || '#f97316'} metalness={0.1} roughness={0.3} transparent opacity={0.9} emissive={node.color || '#f97316'} emissiveIntensity={0.5} toneMapped={false} />
       </mesh>
       <Text position={[0, -size - 2.5, 0]} fontSize={2} color="#94a3b8" anchorX="center" anchorY="top">
         {node.label}

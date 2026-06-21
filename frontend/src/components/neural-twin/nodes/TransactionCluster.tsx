@@ -17,7 +17,7 @@ function hexToRgb(hex: string) {
 export function TransactionCluster({ node }: { node: GraphNode }) {
   const meshRef = useRef<THREE.Group>(null)
   const { selectNode, hoverNode } = useNeuralTwinStore()
-  const size = Math.max(1.5, Math.min(6, Math.abs(node.value) / 100000))
+  const size = Math.max(1, Math.min(3.5, Math.abs(node.value) / 100000))
   const color = new THREE.Color(node.color || '#8b5cf6')
   const rgb = hexToRgb(node.color || '#8b5cf6')
   const particleCount = Math.min(Math.floor(Math.abs(node.value) / 5000), 20)
@@ -38,7 +38,7 @@ export function TransactionCluster({ node }: { node: GraphNode }) {
         onPointerOut={() => hoverNode(null)}
       >
         <sphereGeometry args={[size, 16, 16]} />
-        <meshPhysicalMaterial color={color} metalness={0.2} roughness={0.6} transparent opacity={0.85} emissive={color} emissiveIntensity={0.15} />
+        <meshPhysicalMaterial color={color} metalness={0.1} roughness={0.4} transparent opacity={0.9} emissive={color} emissiveIntensity={0.6} toneMapped={false} />
       </mesh>
       {/* Orbiting particles */}
       {Array.from({ length: particleCount }).map((_, i) => {
