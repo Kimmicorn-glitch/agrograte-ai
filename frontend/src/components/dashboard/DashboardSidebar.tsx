@@ -164,7 +164,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       <main className="lg:ml-60 xl:ml-64 min-h-screen">
-        <div className="p-4 sm:p-6 md:p-8 lg:p-6 xl:p-8 max-w-7xl 2xl:max-w-screen-2xl mx-auto">
+        <div className="pl-16 lg:pl-6 xl:pl-8 pr-4 sm:pr-6 md:pr-8 lg:pr-6 xl:pr-8 pt-4 sm:pt-6 md:pt-8 lg:pt-6 xl:pt-8 pb-4 sm:pb-6 md:pb-8 lg:pb-6 xl:pb-8 max-w-7xl 2xl:max-w-screen-2xl mx-auto">
           {children}
         </div>
       </main>
