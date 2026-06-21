@@ -16,6 +16,15 @@ interface RiskData {
 
 export function RiskDistributionChart({ riskBreakdown }: { riskBreakdown?: RiskData[] }) {
   const chartData = Array.isArray(riskBreakdown) ? riskBreakdown : []
+  console.log('[RiskDistributionChart] Input data:', chartData)
+
+  if (chartData.length > 0) {
+    chartData.forEach((item, i) => {
+      if (typeof item.value === 'undefined' || item.value === null) console.warn(`[RiskDistributionChart] item[${i}].value is undefined/null`)
+      if (typeof item.name === 'undefined' || item.name === null) console.warn(`[RiskDistributionChart] item[${i}].name is undefined/null`)
+      if (typeof item.value !== 'undefined' && isNaN(Number(item.value))) console.warn(`[RiskDistributionChart] item[${i}].value is NaN`)
+    })
+  }
 
   return (
     <GlassCard depth={1}>

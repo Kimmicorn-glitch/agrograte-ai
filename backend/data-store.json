@@ -33,6 +33,110 @@
       "is_active": true,
       "currency": "ZAR",
       "created_at": "2025-02-01T00:00:00Z"
+    },
+    "3353431574710163189587446": {
+      "id": "3353431574710163189587446",
+      "business_id": "biz-1",
+      "account_number": "10011425044",
+      "account_name": "Mr Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "3353431574710166878182963": {
+      "id": "3353431574710166878182963",
+      "business_id": "biz-1",
+      "account_number": "1100470321500",
+      "account_name": "Mr Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "3353431574710189969910439": {
+      "id": "3353431574710189969910439",
+      "business_id": "biz-1",
+      "account_number": "1100470321503",
+      "account_name": "Mr Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "3353431574710163191281913": {
+      "id": "3353431574710163191281913",
+      "business_id": "biz-1",
+      "account_number": "1100470321540",
+      "account_name": "Mr Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "2111047871310183964720792": {
+      "id": "2111047871310183964720792",
+      "business_id": "biz-1",
+      "account_number": "10012024052",
+      "account_name": "Mrs Little Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "2111047871310183964825897": {
+      "id": "2111047871310183964825897",
+      "business_id": "biz-1",
+      "account_number": "1100581439500",
+      "account_name": "Mrs Little Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "3882638263210182035050683": {
+      "id": "3882638263210182035050683",
+      "business_id": "biz-1",
+      "account_number": "10011948799",
+      "account_name": "Mr Little Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
+    },
+    "3882638263210182035137740": {
+      "id": "3882638263210182035137740",
+      "business_id": "biz-1",
+      "account_number": "1100579911500",
+      "account_name": "Mr Little Smith",
+      "account_type": "current",
+      "current_balance": 0,
+      "available_balance": 0,
+      "reserved_tax_funds": 0,
+      "is_active": true,
+      "currency": "ZAR",
+      "created_at": "2026-06-21T13:42:52.225Z"
     }
   },
   "transactions": [],
@@ -58,11 +162,11 @@
     }
   },
   "drrt_state": {
-    "coherence": 0.701,
-    "contradiction": 0.09,
+    "coherence": 0.625,
+    "contradiction": 0.112,
     "frustration_index": 0.2,
-    "global_coherence": 0.701,
-    "stability": 0.91,
+    "global_coherence": 0.625,
+    "stability": 0.888,
     "entropy": 0.3,
     "convergence_iterations": 42,
     "trend": "improving",
@@ -71,19 +175,19 @@
         "id": "dim-1",
         "name": "Cash Flow",
         "weight": 0.25,
-        "activation": 1
+        "activation": 0.5
       },
       {
         "id": "dim-2",
         "name": "Revenue",
         "weight": 0.2,
-        "activation": 0.876
+        "activation": 0.772
       },
       {
         "id": "dim-3",
         "name": "Expenses",
         "weight": 0.15,
-        "activation": 0.688
+        "activation": 0.636
       },
       {
         "id": "dim-4",
@@ -95,7 +199,7 @@
         "id": "dim-5",
         "name": "Risk",
         "weight": 0.1,
-        "activation": 0.299
+        "activation": 0.375
       },
       {
         "id": "dim-6",
@@ -107,21 +211,26 @@
     "relationships": [],
     "memory": [],
     "financial_metrics": {
-      "total_balance": 3590930,
-      "free_cash": 1077279,
-      "liquidity_ratio": 1,
-      "revenue": 3590930,
-      "expenses": 2241237,
-      "profit": 1349693,
+      "total_balance": 0,
+      "free_cash": -434200,
+      "liquidity_ratio": 0,
+      "revenue": 2209720,
+      "expenses": 1607657,
+      "profit": 602063,
       "vat_compliance_ratio": 0.5,
       "tax_compliance_ratio": 0.6666666666666666,
       "compliance_score": 0.69,
-      "transaction_volume_90d": 4197190.5,
+      "transaction_volume_90d": 4893876.9,
       "transaction_count_90d": 90,
       "pending_transaction_ratio": 0.1,
       "successful_transaction_ratio": 0.9,
       "paid_invoice_ratio": 0
     }
   },
-  "investec_tokens": null
+  "investec_tokens": {
+    "access_token": "U9L32yE8xX2AAAndWRRXgJLkr6jp",
+    "token_type": "Bearer",
+    "expires_in": 1799,
+    "last_sync": "2026-06-21T13:42:52.226Z"
+  }
 }

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Banknote, Plus, ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react'
+import { Banknote, Plus, ArrowUpRight, ArrowDownRight, AlertTriangle, Clock } from 'lucide-react'
 import { staggerContainer, fadeInUp } from '@/lib/motion'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { api } from '@/lib/api'
 
 export default function BankingPage() {
@@ -62,7 +63,7 @@ export default function BankingPage() {
 
   return (
     <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
-      <motion.div variants={fadeInUp} className="flex items-center justify-between mb-8">
+      <motion.div variants={fadeInUp} className="flex items-start justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-accent-subtle flex items-center justify-center">
             <Banknote size={16} className="text-accent" />
@@ -72,9 +73,13 @@ export default function BankingPage() {
             <p className="text-body-md text-charcoal-500">Connected accounts & transactions</p>
           </div>
         </div>
-        <button className="btn-primary btn-sm"><Plus size={14} /> Connect Account</button>
+        <div className="flex items-center gap-2">
+          <span className="text-caption text-charcoal-400 hidden sm:flex items-center gap-1"><Clock size={12} /> Live</span>
+          <button className="btn-primary btn-sm"><Plus size={14} /> Connect Account</button>
+        </div>
       </motion.div>
 
+      <ErrorBoundary>
       <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {accounts.map((a: any) => {
           const t = trend(a.available_balance ?? 0)
@@ -100,7 +105,9 @@ export default function BankingPage() {
           </div>
         )}
       </motion.div>
+      </ErrorBoundary>
 
+      <ErrorBoundary>
       <motion.div variants={fadeInUp} className="card">
         <h2 className="text-heading-md text-secondary mb-4">Transaction Intelligence</h2>
         {transactions.length > 0 ? (
@@ -124,6 +131,7 @@ export default function BankingPage() {
           <p className="text-body-sm text-charcoal-500">Your Investec Programmable Banking data is being synchronized.</p>
         )}
       </motion.div>
+      </ErrorBoundary>
     </motion.div>
   )
 }

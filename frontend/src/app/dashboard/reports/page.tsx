@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FileText, TrendingUp, Scale, Wallet, Download, Eye, ChevronRight, Building2, AlertTriangle } from 'lucide-react'
+import { FileText, TrendingUp, Scale, Wallet, Download, Eye, ChevronRight, Building2, AlertTriangle, Clock } from 'lucide-react'
 import { staggerContainer, fadeInUp } from '@/lib/motion'
 import { api } from '@/lib/api'
 
@@ -186,13 +186,19 @@ export default function ReportsPage() {
 
   return (
     <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
-      <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-8">
-        <div className="w-8 h-8 rounded-lg bg-accent-subtle flex items-center justify-center">
-          <FileText size={16} className="text-accent" />
+      <motion.div variants={fadeInUp} className="flex items-start justify-between gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-accent-subtle flex items-center justify-center">
+            <FileText size={16} className="text-accent" />
+          </div>
+          <div>
+            <h1 className="text-display-sm text-secondary">Reports</h1>
+            <p className="text-body-md text-charcoal-500">Financial statements and tax summaries</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-display-sm text-secondary">Reports</h1>
-          <p className="text-body-md text-charcoal-500">Financial statements and tax summaries</p>
+        <div className="flex items-center gap-1.5 text-caption text-charcoal-400 shrink-0">
+          <Clock size={12} />
+          <span>Updated now</span>
         </div>
       </motion.div>
 

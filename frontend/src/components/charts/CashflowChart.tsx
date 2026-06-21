@@ -27,6 +27,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function CashflowChart({ data }: { data?: CashflowPoint[] }) {
   const chartData = Array.isArray(data) ? data : []
+  console.log('[CashflowChart] Input data:', chartData)
+
+  if (chartData.length > 0) {
+    const first = chartData[0]
+    console.log('[CashflowChart] Sample point:', first)
+    if (typeof first.revenue === 'undefined' || first.revenue === null) console.warn('[CashflowChart] revenue is undefined/null')
+    if (typeof first.expenses === 'undefined' || first.expenses === null) console.warn('[CashflowChart] expenses is undefined/null')
+    if (typeof first.label === 'undefined' || first.label === null) console.warn('[CashflowChart] label is undefined/null')
+    if (typeof first.revenue !== 'undefined' && isNaN(Number(first.revenue))) console.warn('[CashflowChart] revenue is NaN')
+    if (typeof first.expenses !== 'undefined' && isNaN(Number(first.expenses))) console.warn('[CashflowChart] expenses is NaN')
+  }
 
   return (
     <GlassCard depth={2}>

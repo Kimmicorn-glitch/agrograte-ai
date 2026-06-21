@@ -1,5 +1,6 @@
 'use strict'
 
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const port = 8080
@@ -721,11 +722,18 @@ app.use((err, req, res, next) => {
   })
 })
 
-app.listen(port, '0.0.0.0', () => {
-  const db = dbSnapshot()
-  const inv = investecSnapshot()
-  log.info('server_started', { port, env: envSnapshot(), db, investec: inv })
-})
+async function start() {
+  if (investec.isConfigured()) {
+    await investec.authenticate()
+  }
+  app.listen(port, '0.0.0.0', () => {
+    const db = dbSnapshot()
+    const inv = investecSnapshot()
+    log.info('server_started', { port, env: envSnapshot(), db, investec: inv })
+  })
+}
+
+start()
 
 process.on('SIGINT', () => {
   log.info('server_shutdown', { reason: 'SIGINT' })

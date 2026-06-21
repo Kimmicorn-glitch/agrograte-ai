@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { GlassCard } from '@/components/ui/GlassCard'
 import { MetricTile } from '@/components/ui/MetricTile'
-import { TrendingUp, TrendingDown, BarChart3, Clock, Activity, Brain, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, BarChart3, Clock, Activity, Brain, AlertTriangle, RefreshCw } from 'lucide-react'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { api } from '@/lib/api'
 
 interface Scenario {
@@ -68,6 +69,7 @@ export default function CashFlowPage() {
         </p>
       </div>
 
+      <ErrorBoundary>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <GlassCard>
           <div className="flex flex-col items-center text-center py-2">
@@ -111,7 +113,9 @@ export default function CashFlowPage() {
           </div>
         </GlassCard>
       </div>
+      </ErrorBoundary>
 
+      <ErrorBoundary>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <GlassCard>
           <div className="flex items-center gap-2 mb-3">
@@ -176,7 +180,9 @@ export default function CashFlowPage() {
           </div>
         </GlassCard>
       </div>
+      </ErrorBoundary>
 
+      <ErrorBoundary>
       <div className="grid grid-cols-1 gap-4">
         <GlassCard>
           <div className="flex items-center gap-2 mb-3">
@@ -215,6 +221,7 @@ export default function CashFlowPage() {
           </div>
         </GlassCard>
       </div>
+      </ErrorBoundary>
     </div>
   )
 }

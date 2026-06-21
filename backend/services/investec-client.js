@@ -3,9 +3,13 @@
 const https = require('https')
 const { getDataStore } = require('./data-store')
 
-const INVESTEC_AUTH_URL = 'https://openapi.investec.com/identity/v2/oauth2/authorize'
-const INVESTEC_TOKEN_URL = 'https://openapi.investec.com/identity/v2/oauth2/token'
-const INVESTEC_API_BASE = 'https://openapi.investec.com'
+const INVESTEC_PROD_AUTH_URL = 'https://openapi.investec.com/identity/v2/oauth2/authorize'
+const INVESTEC_PROD_TOKEN_URL = 'https://openapi.investec.com/identity/v2/oauth2/token'
+const INVESTEC_PROD_API_BASE = 'https://openapi.investec.com'
+
+const INVESTEC_SANDBOX_AUTH_URL = 'https://openapisandbox.investec.com/identity/v2/oauth2/authorize'
+const INVESTEC_SANDBOX_TOKEN_URL = 'https://openapisandbox.investec.com/identity/v2/oauth2/token'
+const INVESTEC_SANDBOX_API_BASE = 'https://openapisandbox.investec.com'
 
 class InvestecClient {
   constructor() {
@@ -13,23 +17,67 @@ class InvestecClient {
     this.clientSecret = process.env.INVESTEC_CLIENT_SECRET || ''
     this.apiKey = process.env.INVESTEC_API_KEY || ''
     this.redirectUri = process.env.INVESTEC_REDIRECT_URI || 'http://localhost:8080/api/investec/callback'
+    this.useSandbox = process.env.INVESTEC_USE_SANDBOX === 'true'
     this.authenticated = false
+    this.accessToken = null
+    this.tokenExpiry = 0
   }
+
+  get authUrl() { return this.useSandbox ? INVESTEC_SANDBOX_AUTH_URL : INVESTEC_PROD_AUTH_URL }
+  get tokenUrl() { return this.useSandbox ? INVESTEC_SANDBOX_TOKEN_URL : INVESTEC_PROD_TOKEN_URL }
+  get apiBase() { return this.useSandbox ? INVESTEC_SANDBOX_API_BASE : INVESTEC_PROD_API_BASE }
 
   isConfigured() {
     return !!(this.clientId && this.clientSecret && this.clientId !== 'your_client_id')
   }
 
+  getCommonHeaders() {
+    const headers = { 'Content-Type': 'application/json' }
+    if (this.apiKey) {
+      headers['x-api-key'] = this.apiKey
+    }
+    return headers
+  }
+
+  async authenticate() {
+    if (this.accessToken && Date.now() < this.tokenExpiry) return this.accessToken
+    if (!this.isConfigured()) return null
+    const body = new URLSearchParams({
+      grant_type: 'client_credentials',
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+    })
+    try {
+      const result = await this._post(this.tokenUrl, body.toString(), {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...(this.apiKey ? { 'x-api-key': this.apiKey } : {}),
+      })
+      if (result.access_token) {
+        this.accessToken = result.access_token
+        this.tokenExpiry = Date.now() + (result.expires_in || 3600) * 1000
+        this.authenticated = true
+        const store = getDataStore()
+        store.setInvestecTokens({ access_token: this.accessToken, token_type: result.token_type || 'Bearer', expires_in: result.expires_in || 3600, last_sync: new Date().toISOString() })
+        console.log('[InvestecClient] Authenticated successfully via client_credentials')
+      }
+      return this.accessToken
+    } catch (err) {
+      console.error('[InvestecClient] Authentication failed:', err.message)
+      this.authenticated = false
+      return null
+    }
+  }
+
   getAuthUrl(state) {
     if (!this.isConfigured()) {
-      const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: 'sandbox',
-        redirect_uri: this.redirectUri,
-        state: state,
-        scope: 'accounts transactions',
-      })
-      return `${INVESTEC_AUTH_URL}?${params.toString()}`
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: 'sandbox',
+      redirect_uri: this.redirectUri,
+      state: state,
+      scope: 'accounts transactions',
+    })
+    return `${this.authUrl}?${params.toString()}`
     }
     const params = new URLSearchParams({
       response_type: 'code',
@@ -38,11 +86,11 @@ class InvestecClient {
       state: state,
       scope: 'accounts transactions',
     })
-    return `${INVESTEC_AUTH_URL}?${params.toString()}`
+    return `${this.authUrl}?${params.toString()}`
   }
 
   async exchangeCode(code, state) {
-    if (!this.isConfigured()) {
+    if (!this.isConfigured() || this.useSandbox) {
       return {
         access_token: 'sandbox-token',
         refresh_token: 'sandbox-refresh',
@@ -57,13 +105,13 @@ class InvestecClient {
       client_id: this.clientId,
       client_secret: this.clientSecret,
     })
-    return this._post(INVESTEC_TOKEN_URL, body.toString(), {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    })
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+    if (this.apiKey) headers['x-api-key'] = this.apiKey
+    return this._post(this.tokenUrl, body.toString(), headers)
   }
 
   async refreshAccessToken(refreshToken) {
-    if (!this.isConfigured()) {
+    if (!this.isConfigured() || this.useSandbox) {
       return {
         access_token: 'sandbox-token',
         refresh_token: 'sandbox-refresh',
@@ -77,19 +125,18 @@ class InvestecClient {
       client_id: this.clientId,
       client_secret: this.clientSecret,
     })
-    return this._post(INVESTEC_TOKEN_URL, body.toString(), {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    })
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+    if (this.apiKey) headers['x-api-key'] = this.apiKey
+    return this._post(this.tokenUrl, body.toString(), headers)
   }
 
   isSandbox() {
-    return !this.isConfigured()
+    return this.useSandbox || !this.isConfigured()
   }
 
   async getAccounts() {
-    const tokens = getDataStore().getInvestecTokens()
-    if (!tokens?.access_token) return []
-    if (this.isSandbox()) {
+    const token = await this.authenticate()
+    if (!token && this.isSandbox()) {
       const sampleAccounts = [
         {
           account_id: 'sandbox-1',
@@ -121,40 +168,48 @@ class InvestecClient {
         }
       }
       store.save()
+      const tokens = getDataStore().getInvestecTokens()
       store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
       return sampleAccounts
     }
-    const data = await this._get(`${INVESTEC_API_BASE}/za/pb/v1/accounts`, {
-      Authorization: `Bearer ${tokens.access_token}`,
-    })
-    const accounts = data.data?.accounts || []
-    const store = getDataStore()
-    for (const account of accounts) {
-      const id = account.account_id || account.accountId || account.id
-      if (!id) continue
-      store.data.accounts[id] = {
-        id,
-        business_id: 'biz-1',
-        account_number: account.account_number || account.accountNumber || '',
-        account_name: account.account_name || account.accountName || '',
-        account_type: account.account_type || account.accountType || 'current',
-        current_balance: Number(account.current_balance ?? account.currentBalance ?? 0),
-        available_balance: Number(account.available_balance ?? account.availableBalance ?? 0),
-        reserved_tax_funds: Number(account.reserved_tax_funds ?? 0),
-        is_active: true,
-        currency: account.currency || 'ZAR',
-        created_at: new Date().toISOString(),
+    if (!token) return []
+    try {
+      const data = await this._get(`${this.apiBase}/za/pb/v1/accounts`, {
+        Authorization: `Bearer ${token}`,
+        ...this.getCommonHeaders(),
+      })
+      const accounts = data.data?.accounts || []
+      const store = getDataStore()
+      for (const account of accounts) {
+        const id = account.account_id || account.accountId || account.id
+        if (!id) continue
+        store.data.accounts[id] = {
+          id,
+          business_id: 'biz-1',
+          account_number: account.account_number || account.accountNumber || '',
+          account_name: account.account_name || account.accountName || '',
+          account_type: account.account_type || account.accountType || 'current',
+          current_balance: Number(account.current_balance ?? account.currentBalance ?? 0),
+          available_balance: Number(account.available_balance ?? account.availableBalance ?? 0),
+          reserved_tax_funds: Number(account.reserved_tax_funds ?? 0),
+          is_active: true,
+          currency: account.currency || 'ZAR',
+          created_at: new Date().toISOString(),
+        }
       }
+      store.save()
+      const tokens = getDataStore().getInvestecTokens()
+      store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
+      return accounts
+    } catch (err) {
+      console.warn('[InvestecClient] Failed to fetch accounts from API, using seed data:', err.message)
+      return []
     }
-    store.save()
-    store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
-    return accounts
   }
 
   async getTransactions(accountId, fromDate, toDate) {
-    const tokens = getDataStore().getInvestecTokens()
-    if (!tokens?.access_token || !accountId) return []
-    if (this.isSandbox()) {
+    const token = await this.authenticate()
+    if (!token && this.isSandbox()) {
       const store = getDataStore()
       const existing = store.getTransactions(accountId)
       if (existing.length > 0) {
@@ -190,45 +245,54 @@ class InvestecClient {
         txns.push(txn)
       }
       store.save()
+      const tokens = getDataStore().getInvestecTokens()
       store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
       return txns
     }
-    let url = `${INVESTEC_API_BASE}/za/pb/v1/accounts/${accountId}/transactions`
-    const params = new URLSearchParams()
-    if (fromDate) params.set('fromDate', fromDate)
-    if (toDate) params.set('toDate', toDate)
-    const qs = params.toString()
-    if (qs) url += `?${qs}`
-    const data = await this._get(url, {
-      Authorization: `Bearer ${tokens.access_token}`,
-    })
-    const txns = data.data?.transactions || []
-    const store = getDataStore()
-    for (const txn of txns) {
-      const id = txn.transaction_id || txn.transactionId || txn.id
-      if (!id) continue
-      store.data.transactions[id] = {
-        id,
-        account_id: accountId,
-        amount: Number(txn.amount ?? 0),
-        balance: Number(txn.balance ?? 0),
-        description: txn.description || txn.merchant?.name || 'Investec transaction',
-        category: txn.category || 'banking',
-        transaction_type: txn.transaction_type || txn.transactionType || (Number(txn.amount ?? 0) >= 0 ? 'credit' : 'debit'),
-        status: txn.status || 'posted',
-        posted_at: txn.posting_date || txn.transactionDate || txn.posted_at || new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        merchant: txn.merchant || { name: txn.description || 'Investec transaction' },
+    if (!token || !accountId) return []
+    try {
+      let url = `${this.apiBase}/za/pb/v1/accounts/${accountId}/transactions`
+      const params = new URLSearchParams()
+      if (fromDate) params.set('fromDate', fromDate)
+      if (toDate) params.set('toDate', toDate)
+      const qs = params.toString()
+      if (qs) url += `?${qs}`
+      const data = await this._get(url, {
+        Authorization: `Bearer ${token}`,
+        ...this.getCommonHeaders(),
+      })
+      const txns = data.data?.transactions || []
+      const store = getDataStore()
+      for (const txn of txns) {
+        const id = txn.transaction_id || txn.transactionId || txn.id
+        if (!id) continue
+        store.data.transactions[id] = {
+          id,
+          account_id: accountId,
+          amount: Number(txn.amount ?? 0),
+          balance: Number(txn.balance ?? 0),
+          description: txn.description || txn.merchant?.name || 'Investec transaction',
+          category: txn.category || 'banking',
+          transaction_type: txn.transaction_type || txn.transactionType || (Number(txn.amount ?? 0) >= 0 ? 'credit' : 'debit'),
+          status: txn.status || 'posted',
+          posted_at: txn.posting_date || txn.transactionDate || txn.posted_at || new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          merchant: txn.merchant || { name: txn.description || 'Investec transaction' },
+        }
       }
+      store.save()
+      const tokens = getDataStore().getInvestecTokens()
+      store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
+      return txns
+    } catch (err) {
+      console.warn('[InvestecClient] Failed to fetch transactions from API, using seed data:', err.message)
+      return []
     }
-    store.save()
-    store.setInvestecTokens({ ...(tokens || {}), last_sync: new Date().toISOString() })
-    return txns
   }
 
   getConnectionStatus() {
     const tokens = getDataStore().getInvestecTokens()
-    const connected = !!(tokens?.access_token && (this.isConfigured() || this.isSandbox()))
+    const connected = this.authenticated || !!(tokens?.access_token && this.isSandbox())
     const accounts = connected ? getDataStore().getAccounts('biz-1') : []
     return {
       connected,

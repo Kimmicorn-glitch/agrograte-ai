@@ -8,9 +8,11 @@ import { cardVariants } from '@/lib/motion'
 interface ExecutiveSummaryCardProps {
   label: string
   value: string
+  description?: string
   change?: string
   trend?: 'up' | 'down' | 'warning' | 'info' | 'neutral'
   subtitle?: string
+  timestamp?: string
   index?: number
   onClick?: () => void
 }
@@ -34,9 +36,11 @@ const trendColors: Record<string, string> = {
 export function ExecutiveSummaryCard({
   label,
   value,
+  description,
   change,
   trend,
   subtitle,
+  timestamp,
   index = 0,
   onClick,
 }: ExecutiveSummaryCardProps) {
@@ -62,8 +66,14 @@ export function ExecutiveSummaryCard({
       <div className="metric-value text-heading-md sm:text-metric-md lg:text-display-sm mb-1 sm:mb-2 text-secondary break-words">
         {value}
       </div>
+      {description && (
+        <p className="text-body-sm text-charcoal-500 mb-1">{description}</p>
+      )}
       {subtitle && (
         <p className="text-caption text-charcoal-500">{subtitle}</p>
+      )}
+      {timestamp && (
+        <p className="text-caption text-charcoal-400 mt-2">{timestamp}</p>
       )}
     </motion.div>
   )

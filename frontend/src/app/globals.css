@@ -477,6 +477,16 @@ body {
   .progress-bar-fill-error {
     background: #DC2626;
   }
+
+  .chart-container {
+    width: 100%;
+    height: 200px;
+  }
+
+  .chart-container-lg {
+    width: 100%;
+    height: 280px;
+  }
 }
 
 @keyframes fadeInUp {

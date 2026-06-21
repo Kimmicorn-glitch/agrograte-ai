@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, ArrowRight, CheckCircle2, Brain, AlertTriangle } from 'lucide-react'
+import { Calendar, ArrowRight, CheckCircle2, Brain, AlertTriangle, Clock } from 'lucide-react'
 import { staggerContainer, fadeInUp } from '@/lib/motion'
 import { StatusBadge } from '@/components/ui/StatusBadge'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { api } from '@/lib/api'
 
 const deadlineItems = [
@@ -130,28 +131,36 @@ export default function ComplianceWorkspace() {
         <div className="card text-center">
           <div className="text-3xl font-bold text-secondary">{summary?.sars_compliance_score || 0}</div>
           <div className="text-caption text-charcoal-500">Compliance Score</div>
+          <div className="flex items-center justify-center gap-1 mt-2 text-caption text-charcoal-400">
+            <Clock size={10} />
+            <span>Updated now</span>
+          </div>
         </div>
         <div className="card text-center">
           <div className={`text-3xl font-bold ${summary?.vat_compliant ? 'text-success' : 'text-warning'}`}>
             {summary?.vat_compliant ? 'OK' : 'Due'}
           </div>
           <div className="text-caption text-charcoal-500">VAT Status</div>
+          <p className="text-caption text-charcoal-400 mt-1">Next filing: 25 Jul 2025</p>
         </div>
         <div className="card text-center">
           <div className={`text-3xl font-bold ${summary?.tax_compliant ? 'text-success' : 'text-warning'}`}>
             {summary?.tax_compliant ? 'Ready' : 'Pending'}
           </div>
           <div className="text-caption text-charcoal-500">Tax Readiness</div>
+          <p className="text-caption text-charcoal-400 mt-1">Annual return due 31 Jan 2026</p>
         </div>
         <div className="card text-center">
           <div className={`text-3xl font-bold ${(summary?.outstanding_returns || 0) > 0 ? 'text-warning' : 'text-success'}`}>
             {summary?.outstanding_returns || 0}
           </div>
           <div className="text-caption text-charcoal-500">Outstanding Returns</div>
+          <p className="text-caption text-charcoal-400 mt-1">Requires attention</p>
         </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <ErrorBoundary>
         <motion.div variants={fadeInUp} className="lg:col-span-2">
           <div className="card">
             <h2 className="text-heading-md text-secondary mb-6">Compliance Timeline</h2>
@@ -192,7 +201,9 @@ export default function ComplianceWorkspace() {
             </div>
           </div>
         </motion.div>
+        </ErrorBoundary>
 
+        <ErrorBoundary>
         <motion.div variants={fadeInUp} className="space-y-6">
           <div className="card">
             <h2 className="text-heading-md text-secondary mb-4">Upcoming Deadlines</h2>
@@ -254,6 +265,7 @@ export default function ComplianceWorkspace() {
             </div>
           </div>
         </motion.div>
+        </ErrorBoundary>
       </div>
     </motion.div>
   )
