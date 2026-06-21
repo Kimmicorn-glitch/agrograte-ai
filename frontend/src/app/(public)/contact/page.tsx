@@ -2,17 +2,38 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Send, Mail, MapPin, Clock, ArrowRight } from 'lucide-react'
+import { Send, Mail, MapPin, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import { api } from '@/lib/api'
 
 const fadeUp = { hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } }
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setSending(true)
+    setError(null)
+    const form = e.currentTarget as HTMLFormElement
+    const data = {
+      firstName: (form.elements.namedItem('firstName') as HTMLInputElement).value,
+      lastName: (form.elements.namedItem('lastName') as HTMLInputElement).value,
+      email: (form.elements.namedItem('email') as HTMLInputElement).value,
+      company: (form.elements.namedItem('company') as HTMLInputElement).value,
+      subject: (form.elements.namedItem('subject') as HTMLSelectElement).value,
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
+    }
+    try {
+      await api.post('/api/contact', data)
+      setSubmitted(true)
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong. Please try again.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -51,24 +72,24 @@ export default function ContactPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-mono text-white/50 block mb-1">First Name</label>
-                      <input type="text" required className="glass-input" placeholder="John" />
+                      <input type="text" name="firstName" required className="glass-input" placeholder="John" />
                     </div>
                     <div>
                       <label className="text-xs font-mono text-white/50 block mb-1">Last Name</label>
-                      <input type="text" required className="glass-input" placeholder="Doe" />
+                      <input type="text" name="lastName" required className="glass-input" placeholder="Doe" />
                     </div>
                   </div>
                   <div>
                     <label className="text-xs font-mono text-white/50 block mb-1">Email</label>
-                    <input type="email" required className="glass-input" placeholder="john@example.com" />
+                    <input type="email" name="email" required className="glass-input" placeholder="john@example.com" />
                   </div>
                   <div>
                     <label className="text-xs font-mono text-white/50 block mb-1">Company</label>
-                    <input type="text" className="glass-input" placeholder="Your company name" />
+                    <input type="text" name="company" className="glass-input" placeholder="Your company name" />
                   </div>
                   <div>
                     <label className="text-xs font-mono text-white/50 block mb-1">Subject</label>
-                    <select className="glass-select">
+                    <select name="subject" className="glass-select">
                       <option>Early Access Request</option>
                       <option>General Inquiry</option>
                       <option>Partnership Opportunity</option>
@@ -79,11 +100,14 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <label className="text-xs font-mono text-white/50 block mb-1">Message</label>
-                    <textarea required className="glass-textarea" rows={5} placeholder="Tell us about yourself and what you are looking for..." />
+                    <textarea name="message" required className="glass-textarea" rows={5} placeholder="Tell us about yourself and what you are looking for..." />
                   </div>
-                  <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
-                    <Send size={14} />
-                    Send Message
+                  {error && (
+                    <div className="text-red-400 text-xs font-mono bg-red-500/10 border border-red-500/20 rounded px-3 py-2">{error}</div>
+                  )}
+                  <button type="submit" disabled={sending} className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {sending ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                    {sending ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
               )}

@@ -710,6 +710,60 @@ app.get('/api/audit/logs', (req, res) => {
 })
 
 // ---------------------------------------------------------------------------
+// Contact — stores submission and optionally sends email
+// ---------------------------------------------------------------------------
+app.post('/api/contact', express.json(), async (req, res) => {
+  const { firstName, lastName, email, company, subject, message } = req.body || {}
+  if (!firstName || !email || !message) {
+    return res.status(400).json({ error: 'Missing required fields: firstName, email, message' })
+  }
+
+  const submission = { firstName, lastName: lastName || '', email, company: company || '', subject: subject || 'General Inquiry', message }
+  const stored = getDataStore().addContactSubmission(submission)
+  log.info('contact_submission_received', { id: stored.id, email, subject: submission.subject })
+
+  // Attempt to send email via nodemailer if SMTP is configured
+  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    try {
+      const nodemailer = require('nodemailer')
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      })
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: 'kimberley.bezuidenhout@gmail.com',
+        subject: `[Agrograte Contact] ${subject} — ${firstName} ${lastName}`,
+        html: `
+          <h2>New Contact Submission</h2>
+          <table style="border-collapse:collapse;width:100%;max-width:600px;font-family:sans-serif;">
+            <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Name</td><td style="padding:8px;border:1px solid #ddd;">${firstName} ${lastName}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Email</td><td style="padding:8px;border:1px solid #ddd;">${email}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Company</td><td style="padding:8px;border:1px solid #ddd;">${company}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Subject</td><td style="padding:8px;border:1px solid #ddd;">${subject}</td></tr>
+            <tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold;">Message</td><td style="padding:8px;border:1px solid #ddd;">${message}</td></tr>
+          </table>
+          <p style="color:#888;font-size:12px;">Submitted at ${new Date().toISOString()}</p>
+        `,
+      })
+      log.info('contact_email_sent', { id: stored.id, to: 'kimberley.bezuidenhout@gmail.com' })
+      return res.json({ success: true, message: 'Your message has been sent. We will get back to you within 24 hours.', id: stored.id })
+    } catch (err) {
+      log.warn('contact_email_failed', { error: err.message, id: stored.id })
+    }
+  } else {
+    log.info('contact_email_skipped', { reason: 'SMTP not configured', id: stored.id })
+  }
+
+  res.json({ success: true, message: 'Your message has been received. We will get back to you within 24 hours.', id: stored.id })
+})
+
+// ---------------------------------------------------------------------------
 // AI Chat — proxies to Hugging Face free Inference API (Mistral 7B)
 // No API key required for basic rate-limited access.
 // Set HF_API_TOKEN env var for higher rate limits.

@@ -5,13 +5,13 @@ import type { GraphNode } from '../types'
 
 export function NodeTooltip({ node }: { node: GraphNode }) {
   return (
-    <Html distanceFactor={20}>
-      <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-lg px-4 py-3 shadow-2xl min-w-[200px] pointer-events-none">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: node.color }} />
-          <span className="text-white text-sm font-medium">{node.label}</span>
+    <Html distanceFactor={15}>
+      <div className="bg-slate-900/95 backdrop-blur-md border border-white/10 rounded-lg px-5 py-4 shadow-2xl min-w-[280px] pointer-events-none">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: node.color }} />
+          <span className="text-white text-base font-semibold">{node.label}</span>
         </div>
-        <div className="text-xs text-slate-400 space-y-0.5">
+        <div className="text-sm text-slate-400 space-y-1">
           <span className="capitalize">{node.type}</span>
           {node.value ? <div>Value: R{Math.abs(node.value).toLocaleString()}</div> : null}
           {node.metadata?.balance ? <div>Balance: R{Number(node.metadata.balance).toLocaleString()}</div> : null}

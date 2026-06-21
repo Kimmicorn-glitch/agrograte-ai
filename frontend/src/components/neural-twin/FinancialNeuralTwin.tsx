@@ -78,7 +78,7 @@ function SceneBackground() {
 
 export function FinancialNeuralTwin() {
   return (
-    <div className="w-full h-[600px] rounded-xl overflow-hidden border border-white/10 bg-[#0a0a1a]">
+    <div className="w-full h-[700px] rounded-xl overflow-hidden border border-white/10 bg-[#0a0a1a]">
       <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 120], fov: 60 }}>
         <PerspectiveCamera makeDefault position={[0, 0, 120]} fov={60} />
         <SceneBackground />

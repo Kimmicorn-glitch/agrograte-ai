@@ -78,7 +78,7 @@ export function NodeInspector({ node, onClose }: { node: GraphNode; onClose: () 
 
   return (
     <Html distanceFactor={30} center>
-      <div className="bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl min-w-[320px] max-w-[400px] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-slate-900/98 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl min-w-[380px] max-w-[480px] pointer-events-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-white/5">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: node.color }} />

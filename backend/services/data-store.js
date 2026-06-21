@@ -26,6 +26,7 @@ const INITIAL_DATA = {
   programmable_rules: {},
   approval_workflows: {},
   audit_logs: {},
+  contact_submissions: {},
   users: {
     'user-1': {
       id: 'user-1',
@@ -258,6 +259,17 @@ class DataStore {
     this.data.drrt_state = { ...this.data.drrt_state, ...updates }
     this.save()
     return this.data.drrt_state
+  }
+
+  addContactSubmission(submission) {
+    const id = submission.id || `contact-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    this.data.contact_submissions[id] = { ...submission, id, created_at: new Date().toISOString() }
+    this.save()
+    return this.data.contact_submissions[id]
+  }
+
+  getContactSubmissions() {
+    return Object.values(this.data.contact_submissions).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
   }
 
   getInvestecTokens() { return this.data.investec_tokens }
