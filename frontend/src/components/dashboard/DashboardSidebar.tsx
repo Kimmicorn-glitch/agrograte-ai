@@ -78,13 +78,13 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
   }, [sidebarOpen])
 
   return (
-    <div className="min-h-screen bg-carbon-950">
+    <div className="min-h-screen bg-charcoal-950">
       <button
         onClick={toggleSidebar}
         aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
-        className="fixed top-4 left-4 z-50 p-3 glass rounded-lg lg:hidden hover:bg-glass-hover transition-colors"
+        className="fixed top-4 left-4 z-50 p-3 bg-charcoal-900/80 backdrop-blur-xl rounded-xl border border-charcoal-700/30 lg:hidden hover:bg-charcoal-800 transition-colors"
       >
-        {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        {sidebarOpen ? <X size={20} className="text-white" /> : <Menu size={20} className="text-white" />}
       </button>
 
       <AnimatePresence>
@@ -95,7 +95,7 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+            className="fixed inset-0 bg-charcoal-950/60 backdrop-blur-sm z-30 lg:hidden"
             onClick={closeSidebar}
             aria-hidden="true"
           />
@@ -109,23 +109,23 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
           initial="closed"
           animate={sidebarOpen ? 'open' : 'closed'}
           exit="closed"
-          className="fixed left-0 top-0 h-screen w-64 lg:w-56 glass border-r border-glass-border z-40 flex flex-col"
+          className="fixed left-0 top-0 h-full w-72 lg:w-60 xl:w-64 bg-charcoal-900 border-r border-charcoal-800 z-40 flex flex-col"
         >
-          <div className="p-5 border-b border-glass-border relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-accent opacity-20" />
+          <div className="p-5 lg:p-4 xl:p-5 border-b border-charcoal-800 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-accent/10 to-transparent" />
             <Link href="/dashboard" onClick={closeSidebar} className="flex items-center gap-2 relative z-10">
-              <div className="w-2 h-2 bg-scarlet-600 rounded-full shadow-lg shadow-scarlet-600/50 animate-breathe" />
-              <span className="font-mono font-bold text-sm tracking-tight text-white">AGROGRATE</span>
+              <div className="w-2 h-2 bg-accent rounded-full shadow-lg shadow-accent/50" />
+              <span className="font-mono font-bold text-sm lg:text-xs xl:text-sm tracking-tight text-white">AGROGRATE</span>
             </Link>
-            <span className="text-[0.55rem] text-white/35 font-mono block mt-1 relative z-10 tracking-wider">
+            <span className="text-[0.55rem] lg:text-[0.5rem] xl:text-[0.55rem] text-white/35 font-mono block mt-1 relative z-10 tracking-wider">
               Financial Intelligence OS
             </span>
           </div>
 
-          <nav className="flex-1 py-2 overflow-y-auto">
+          <nav className="flex-1 py-2 overflow-y-auto scrollbar-thin scrollbar-thumb-charcoal-700">
             {navSections.map((section) => (
-              <div key={section.title} className="px-2">
-                <div className="px-3 pt-4 pb-1 text-[0.55rem] text-white/25 font-mono tracking-[0.15em] uppercase">
+              <div key={section.title} className="px-2 lg:px-1.5 xl:px-2">
+                <div className="px-3 pt-4 pb-1 text-[0.55rem] lg:text-[0.5rem] xl:text-[0.55rem] text-white/25 font-mono tracking-[0.15em] uppercase">
                   {section.title}
                 </div>
                 {section.items.map((item) => {
@@ -135,15 +135,15 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
                       key={item.href}
                       href={item.href}
                       onClick={closeSidebar}
-                      className={`flex items-center gap-2.5 px-3 py-2 lg:py-1.5 text-sm lg:text-xs font-mono transition-all rounded-md ${
+                      className={`flex items-center gap-2.5 px-3 py-2.5 lg:py-2 xl:py-2.5 text-sm lg:text-xs xl:text-sm font-mono transition-all rounded-lg ${
                         isActive
-                          ? 'text-white bg-glass-active border border-glass-border'
-                          : 'text-white/50 hover:text-white hover:bg-glass-hover'
+                          ? 'text-white bg-charcoal-800 border border-charcoal-700/50'
+                          : 'text-white/50 hover:text-white hover:bg-charcoal-800/50'
                       }`}
                     >
-                      <item.icon size={14} className={`shrink-0 ${isActive ? 'text-scarlet-400' : ''}`} />
-                      {item.label}
-                      {isActive && <span className="ml-auto w-1 h-1 rounded-full bg-scarlet-500 shadow-lg shadow-scarlet-500/50" />}
+                      <item.icon size={14} className={`shrink-0 ${isActive ? 'text-accent' : ''}`} />
+                      <span className="truncate">{item.label}</span>
+                      {isActive && <span className="ml-auto w-1 h-1 rounded-full bg-accent shadow-lg shadow-accent/50 shrink-0" />}
                     </Link>
                   )
                 })}
@@ -151,20 +151,20 @@ export function DashboardSidebar({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="p-4 border-t border-glass-border">
+          <div className="p-4 lg:p-3 xl:p-4 border-t border-charcoal-800">
             <div className="flex items-center gap-2">
-              <span className="status-ring status-ring-success animate-breathe" />
-              <span className="text-[0.6rem] text-white/45 font-mono">System Nominal</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+              <span className="text-[0.6rem] lg:text-[0.55rem] xl:text-[0.6rem] text-white/45 font-mono">System Nominal</span>
             </div>
-            <span className="text-[0.5rem] text-white/25 font-mono block mt-1">
+            <span className="text-[0.5rem] lg:text-[0.45rem] xl:text-[0.5rem] text-white/25 font-mono block mt-1">
               v0.2.0 &middot; DRRT Active
             </span>
           </div>
         </motion.aside>
       </AnimatePresence>
 
-      <main className="lg:ml-56 min-h-screen">
-        <div className="p-4 md:p-6 lg:p-8">
+      <main className="lg:ml-60 xl:ml-64 min-h-screen">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-6 xl:p-8 max-w-7xl 2xl:max-w-screen-2xl mx-auto">
           {children}
         </div>
       </main>

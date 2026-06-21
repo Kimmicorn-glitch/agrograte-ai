@@ -206,9 +206,17 @@ body {
     background: #FFFFFF;
     border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 0.75rem;
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
     transition: all var(--transition-apple);
+  }
+
+  @screen sm {
+    .card { padding: 1.25rem; }
+  }
+
+  @screen lg {
+    .card { padding: 1.5rem; }
   }
 
   .card-hover:hover {

@@ -50,16 +50,16 @@ export function ExecutiveSummaryCard({
       onClick={onClick}
       style={{ animationDelay: `${index * 60}ms` }}
     >
-      <div className="flex items-start justify-between mb-3">
-        <span className="metric-label">{label}</span>
+      <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
+        <span className="metric-label text-caption sm:text-caption">{label}</span>
         {trend && (
-          <span className={clsx('flex items-center gap-1 text-xs font-medium', trendColors[trend])}>
+          <span className={clsx('flex items-center gap-1 text-caption sm:text-xs font-medium shrink-0', trendColors[trend])}>
             {trendIcons[trend]}
-            {change}
+            <span className="hidden xs:inline">{change}</span>
           </span>
         )}
       </div>
-      <div className="metric-value text-display-sm mb-2 text-secondary">
+      <div className="metric-value text-heading-md sm:text-metric-md lg:text-display-sm mb-1 sm:mb-2 text-secondary break-words">
         {value}
       </div>
       {subtitle && (
