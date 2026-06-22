@@ -85,6 +85,38 @@ export default function HomePage() {
         </div>
       </section>
 
+      <InViewSection>
+        <section className="py-24 md:py-28 px-6 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="max-w-2xl mb-14">
+              <motion.span variants={fadeUp} className="text-xs font-semibold text-[#C1121F] uppercase tracking-widest">The Problem</motion.span>
+              <motion.h2 variants={fadeUp} className="text-3xl md:text-5xl font-semibold text-[#111111] tracking-tight mt-3">
+                Financial data is disconnected from financial decisions
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-lg text-[#495057] mt-4">
+                South African SMEs and accounting professionals face spreadsheets sprawl, manual compliance processes, and no real-time visibility into financial health. Tax deadlines are missed. Cash flow surprises are common. Intelligence arrives too late.
+              </motion.p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-5">
+              {[
+                { title: 'Disconnected Data', description: 'Bank accounts, invoices, receipts, and tax records live in separate systems with no unified view of financial reality.' },
+                { title: 'Manual Compliance', description: 'VAT returns, tax calculations, and regulatory filings require hours of manual work every month.' },
+                { title: 'Reactive Decisions', description: 'Without real-time intelligence, financial decisions are based on outdated information and gut feelings.' },
+              ].map((item) => (
+                <motion.div
+                  key={item.title}
+                  variants={fadeUp}
+                  className="p-6 rounded-xl border border-[#E9ECEF] bg-white"
+                >
+                  <h3 className="text-base font-semibold text-[#111111]">{item.title}</h3>
+                  <p className="mt-2 text-sm text-[#495057] leading-relaxed">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </InViewSection>
+
       <section className="py-20 px-6 bg-[#F8F9FA]">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -222,6 +254,83 @@ export default function HomePage() {
                   </Link>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </section>
+      </InViewSection>
+
+      <InViewSection>
+        <section className="py-24 md:py-28 px-6 bg-[#F8F9FA]">
+          <div className="max-w-7xl mx-auto">
+            <div className="max-w-2xl mb-14">
+              <motion.span variants={fadeUp} className="text-xs font-semibold text-[#C1121F] uppercase tracking-widest">DRRT Intelligence</motion.span>
+              <motion.h2 variants={fadeUp} className="text-3xl md:text-5xl font-semibold text-[#111111] tracking-tight mt-3">
+                The intelligence engine behind every insight
+              </motion.h2>
+              <motion.p variants={fadeUp} className="text-lg text-[#495057] mt-4">
+                The Dynamic Recursive Relational Tensor models your entire financial ecosystem as a multi-dimensional intelligence graph.
+              </motion.p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {[
+                { title: 'Tensor Mapping', description: 'Every financial entity occupies a unique position in a multi-dimensional relational tensor space.' },
+                { title: 'Recursive Convergence', description: 'The tensor iteratively relaxes toward a coherent state of financial truth.' },
+                { title: 'Coherence Scoring', description: 'K(T) and C(T) metrics provide quantitative views of financial health and contradiction detection.' },
+                { title: 'Explainable Output', description: 'Every insight includes a clear, traceable explanation of contributing factors and relationships.' },
+              ].map((item) => (
+                <motion.div key={item.title} variants={fadeUp} className="p-6 rounded-xl border border-[#E9ECEF] bg-white">
+                  <h3 className="text-base font-semibold text-[#111111]">{item.title}</h3>
+                  <p className="mt-2 text-sm text-[#495057] leading-relaxed">{item.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </InViewSection>
+
+      <InViewSection>
+        <section className="py-24 md:py-28 px-6 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-10 items-center">
+              <motion.div variants={fadeUp}>
+                <span className="text-xs font-semibold text-[#C1121F] uppercase tracking-widest">Security & Compliance</span>
+                <h2 className="text-3xl md:text-5xl font-semibold text-[#111111] tracking-tight mt-3">
+                  Bank-grade security. Compliance by design.
+                </h2>
+                <p className="text-lg text-[#495057] mt-4 leading-relaxed">
+                  Every layer of Agrograte AI is built with bank-grade security standards and regulatory compliance at its core.
+                </p>
+                <div className="mt-6 space-y-3">
+                  {[
+                    'AES-256 encryption at rest, TLS 1.3 in transit',
+                    'Zero Trust Architecture with continuous verification',
+                    'POPIA, GDPR, CCPA, and SARS compliance',
+                    'OAuth2 + MFA authentication with short-lived tokens',
+                    'Comprehensive audit logging with immutable trails',
+                  ].map((item) => (
+                    <div key={item} className="flex items-center gap-3 text-sm text-[#495057]">
+                      <Check className="w-4 h-4 text-[#059669] shrink-0" />
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                <Link href="/security" className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#C1121F] hover:text-[#A00E18] transition-colors">
+                  Learn more about our security <ArrowRight className="w-4 h-4" />
+                </Link>
+              </motion.div>
+              <motion.div variants={fadeUp} className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Encryption', value: 'AES-256' },
+                  { label: 'Transit', value: 'TLS 1.3' },
+                  { label: 'Auth', value: 'OAuth2 + MFA' },
+                  { label: 'Compliance', value: 'POPIA Ready' },
+                ].map((item) => (
+                  <div key={item.label} className="p-5 rounded-xl bg-[#F8F9FA] border border-[#E9ECEF]">
+                    <p className="text-2xl font-semibold text-[#111111]">{item.value}</p>
+                    <p className="text-sm text-[#495057] mt-1">{item.label}</p>
+                  </div>
+                ))}
+              </motion.div>
             </div>
           </div>
         </section>

@@ -19,7 +19,7 @@ const sections = [
 
 export default function SecurityPage() {
   return (
-    <div className="pt-24">
+    <div className="pt-24 bg-secondary text-white">
       <section className="py-24">
         <div className="page-container">
           <motion.div initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} className="max-w-3xl mb-16">

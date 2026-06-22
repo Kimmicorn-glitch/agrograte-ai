@@ -17,7 +17,7 @@ const sections = [
 
 export default function DocumentationPage() {
   return (
-    <div className="pt-24">
+    <div className="pt-24 bg-secondary text-white">
       <section className="py-24">
         <div className="page-container">
           <motion.div initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} className="max-w-3xl mb-16">
@@ -64,7 +64,7 @@ export default function DocumentationPage() {
 
           <div className="mt-12 glass-card p-6 text-center">
             <p className="text-sm text-white/60 font-mono mb-4">
-              Documentation is being expanded. Have a specific question?
+              Need help getting started? Our team is ready to assist.
             </p>
             <Link href="/contact" className="btn-ghost text-sm">
               Contact Our Team

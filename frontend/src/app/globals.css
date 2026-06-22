@@ -202,6 +202,162 @@ body {
     font-size: 1.0625rem;
   }
 
+  .glass-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all var(--transition-apple);
+    color: #FFFFFF;
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #FFFFFF;
+  }
+
+  .glass-input {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    padding: 0.625rem 0.875rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+    outline: none;
+    width: 100%;
+    transition: all var(--transition-apple);
+  }
+
+  .glass-input:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+  }
+
+  .glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    padding: 0.625rem 0.875rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+    outline: none;
+    width: 100%;
+    transition: all var(--transition-apple);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,0.4)' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+  }
+
+  .glass-select:focus {
+    border-color: var(--accent);
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+  }
+
+  .glass-select option {
+    background: #1A1A1A;
+    color: #FFFFFF;
+  }
+
+  .glass-textarea {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    padding: 0.625rem 0.875rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+    outline: none;
+    width: 100%;
+    resize: vertical;
+    transition: all var(--transition-apple);
+  }
+
+  .glass-textarea:focus {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px var(--accent-subtle);
+  }
+
+  .glass-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-border {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .bg-glass {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .bg-glass-hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .pill-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-active {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+  }
+
+  .section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .section-title::before {
+    content: '';
+    width: 1.5rem;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .pill-scarlet {
+    background: rgba(193, 18, 31, 0.12);
+    color: #D7535F;
+    border: 1px solid rgba(193, 18, 31, 0.2);
+  }
+
   .card {
     background: #FFFFFF;
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -421,6 +577,17 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+    .noise-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.015;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
   }
 
   .gradient-text-dark {

@@ -23,7 +23,7 @@ const incidents = [
 
 export default function StatusPage() {
   return (
-    <div className="pt-24">
+    <div className="pt-24 bg-secondary text-white">
       <section className="py-24">
         <div className="page-container max-w-4xl">
           <motion.div initial="hidden" animate="visible" variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }} className="mb-12">

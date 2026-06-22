@@ -132,13 +132,19 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <div>
               <h4 className="text-overline text-charcoal-400 mb-4">Product</h4>
               <ul className="space-y-2.5">
-                {['Features', 'Pricing', 'How It Works', 'Technology', 'Integrations'].map((item) => (
-                  <li key={item}>
+                {[
+                  { label: 'Features', href: '/features' },
+                  { label: 'Pricing', href: '/pricing' },
+                  { label: 'How It Works', href: '/how-it-works' },
+                  { label: 'Technology', href: '/technology' },
+                  { label: 'Integration', href: '/investec-integration' },
+                ].map((item) => (
+                  <li key={item.label}>
                     <Link
-                      href={`/${item.toLowerCase().replace(/\s+/g, '-')}`}
+                      href={item.href}
                       className="text-sm text-charcoal-300 hover:text-white transition-colors"
                     >
-                      {item}
+                      {item.label}
                     </Link>
                   </li>
                 ))}

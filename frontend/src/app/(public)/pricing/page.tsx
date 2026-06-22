@@ -10,7 +10,7 @@ const stagger = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { s
 
 export default function PricingPage() {
   return (
-    <div className="pt-24">
+    <div className="pt-24 bg-secondary text-white">
       <section className="py-24">
         <div className="page-container">
           <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center max-w-3xl mx-auto mb-16">

@@ -32,7 +32,7 @@ export default function FeaturesPage() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
   return (
-    <div className="pt-24">
+    <div className="pt-24 bg-secondary text-white">
       <section className="py-24">
         <div className="page-container">
           <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-3xl mb-16">
