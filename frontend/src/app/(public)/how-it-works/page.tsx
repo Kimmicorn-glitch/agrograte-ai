@@ -89,7 +89,7 @@ export default function HowItWorksPage() {
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     {journeySteps[activeStep].details.map((detail) => (
-                      <div key={detail} className="flex items-center gap-2 text-xs text-white/50 font-mono">
+                      <div key={detail} className="flex items-center gap-2 text-xs text-scarlet-400 font-mono">
                         <Check size={12} className="text-success shrink-0" />
                         {detail}
                       </div>
