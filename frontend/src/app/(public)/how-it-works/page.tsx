@@ -80,16 +80,16 @@ export default function HowItWorksPage() {
                   transition={{ duration: 0.4 }}
                   className="glass-panel p-8 md:p-12"
                 >
-                  <span className="text-6xl font-bold text-white/5 font-mono block mb-4">
+                  <span className="text-6xl font-bold text-slate-700 dark:text-white/5 font-mono block mb-4">
                     {String(activeStep + 1).padStart(2, '0')}
                   </span>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-4">{journeySteps[activeStep].title}</h2>
-                  <p className="text-sm text-white/60 font-mono leading-relaxed mb-8">
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">{journeySteps[activeStep].title}</h2>
+                  <p className="text-sm text-slate-700 dark:text-white/60 font-mono leading-relaxed mb-8">
                     {journeySteps[activeStep].description}
                   </p>
                   <div className="grid grid-cols-2 gap-3">
                     {journeySteps[activeStep].details.map((detail) => (
-                      <div key={detail} className="flex items-center gap-2 text-xs text-scarlet-400 font-mono">
+                      <div key={detail} className="flex items-center gap-2 text-xs text-red-400 font-mono">
                         <Check size={12} className="text-success shrink-0" />
                         {detail}
                       </div>
