@@ -58,7 +58,7 @@ export default function AboutPage() {
             <p className="text-sm text-white/60 font-mono leading-relaxed">
               Agrograte AI was born from a simple belief: the gap between raw banking data and 
               intelligent financial decision-making should not exist. By combining Investec 
-              Programmable Banking's real-time API access with our DRRT reasoning engine, 
+               Programmable Banking&apos;s real-time API access with our DRRT reasoning engine, 
               we make financial intelligence continuous, explainable, and accessible.
             </p>
           </motion.div>
@@ -151,7 +151,7 @@ export default function AboutPage() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="glass-card p-8 mb-16">
             <h2 className="text-lg font-bold mb-2">Investec Integration</h2>
             <p className="text-xs text-white/50 font-mono leading-relaxed mb-4">
-              Agrograte AI is purpose-built on Investec Programmable Banking, South Africa's most 
+               Agrograte AI is purpose-built on Investec Programmable Banking, South Africa&apos;s most 
               innovative banking API platform. Through a secure OAuth2 integration, we stream 
               real-time account data, transaction history, and balance information — no manual 
               exports, no CSV uploads, no stale data.
@@ -162,7 +162,7 @@ export default function AboutPage() {
               webhook-driven event processing that responds to account activity in milliseconds, and 
               intelligent cash flow automation that adapts as your business evolves. Because we sit 
               directly on the banking API, every insight in Agrograte AI is built from live data — 
-              not yesterday's snapshot.
+               not yesterday&apos;s snapshot.
             </p>
           </motion.div>
 
